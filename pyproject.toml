@@ -1,0 +1,20 @@
+[tool.poetry]
+name = "erddap-predeployment-checks"
+version = "0.1.0"
+description = "Run a series of tests on the different ERDDAP components which helps resolving the different issues related to an ERDDAP deployment"
+authors = ["Jessy Barrette <30420025+JessyBarrette@users.noreply.github.com>"]
+readme = "README.md"
+packages = [{include = "erddap_predeployment_checks"}]
+
+[tool.poetry.dependencies]
+python = "^3.11"
+pytest = "^7.4.3"
+lxml = "^4.9.3"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.12.0"
+isort = "^5.13.2"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
