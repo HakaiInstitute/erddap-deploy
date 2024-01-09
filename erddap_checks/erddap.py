@@ -1,6 +1,7 @@
 import glob
 import xml.etree.ElementTree as ET
 from pathlib import Path
+
 import xarray as xr
 
 
@@ -38,11 +39,14 @@ class Dataset:
             item.find("destinationName").text: Variable(item)
             for item in self.dataset.findall(".//dataVariable")
         }
-    
+
     def to_xarray(self):
         """Convert a Dataset object to an xarray Dataset"""
         # TODO generate an empty netcdf sample of the resulting dataset and run compliance checker on it
-        vars = {var.destination_name: xr.DataArray(data=None, attrs=var.attrs) for var in self.variables.values()}
+        vars = {
+            var.destination_name: xr.DataArray(data=None, attrs=var.attrs)
+            for var in self.variables.values()
+        }
         return xr.Dataset(vars=vars, attrs=self.attrs)
 
 
