@@ -1,12 +1,32 @@
+import os
+from pathlib import Path
+
 import pytest
 from erddap import Erddap
 
 
-class TestCdmDataType:
-    @pytest.mark.parametrize(
-        "dataset",
-        Erddap(datasets_d="tests/data/datasets.d/*.xml").datasets.values(),
-    )
+def datasets():
+    if datasets_xml := os.environ.get("ERDDAP_DATASETS_XML"):
+        return Erddap(datasets_xml=datasets_xml).datasets
+    elif datasets_d := os.environ.get("ERDDAP_DATASETS_D"):
+        return Erddap(datasets_d=datasets_d).datasets
+    elif Path("datasets.d").exists():
+        return Erddap(datasets_d="datasets.d/*.xml").datasets
+    elif datasets_xml := list(Path(".").glob("**/datasets.xml")):
+        return Erddap(datasets_xml=datasets_xml[0]).datasets
+    elif datasets_d := list(Path(".").glob("**/datasets.d")):
+        return Erddap(datasets_d=str(datasets_d[0]) + "/*.xml").datasets
+    else:
+        raise ValueError("No datasets specified")
+
+
+@pytest.fixture(scope="module", params=datasets().values(), ids=datasets().keys())
+def dataset(request):
+    yield request.param
+    print(f"Finished testing {request.param.dataset_id}")
+
+
+class TestDataset:
     def test_dataset_cdm_data_type(self, dataset):
         """Test that cdm_data_type is valid"""
         assert dataset.attrs["cdm_data_type"] in (
@@ -19,10 +39,6 @@ class TestCdmDataType:
             "TimeSeriesProfile",
         ), f"Dataset {dataset.dataset_id} has invalid cdm_data_type {dataset.attrs['cdm_data_type']}"
 
-    @pytest.mark.parametrize(
-        "dataset",
-        Erddap(datasets_d="tests/data/datasets.d/*.xml").datasets.values(),
-    )
     def test_dataset_subset_variables(self, dataset):
         """Test that subsetVariables are valid variables in the dataset"""
         subset_variables = dataset.attrs.get("subsetVariables", "").split(",")
@@ -35,18 +51,12 @@ class TestCdmDataType:
             not unknown_variables
         ), f"Dataset {dataset.dataset_id} has invalid subsetVariables {unknown_variables}"
 
-    @pytest.mark.parametrize(
-        "dataset",
-        [
-            dataset
-            for dataset in Erddap(
-                datasets_d="tests/data/datasets.d/*.xml"
-            ).datasets.values()
-            if dataset.attrs["cdm_data_type"] in ("TimeSeries", "TimeSeriesProfile")
-        ],
-    )
     def test_dataset_cdm_timeseries_variables(self, dataset):
         """Test that cdm_timeseries_variables are valid variables in the dataset"""
+
+        if dataset.attrs["cdm_data_type"] not in ("TimeSeries", "TimeSeriesProfile"):
+            return
+
         cdm_timeseries_variables = dataset.attrs.get(
             "cdm_timeseries_variables", ""
         ).split(",")
@@ -62,18 +72,10 @@ class TestCdmDataType:
             not unknown_variables
         ), f"Dataset {dataset.dataset_id} has invalid cdm_timeseries_variables {unknown_variables}"
 
-    @pytest.mark.parametrize(
-        "dataset",
-        [
-            dataset
-            for dataset in Erddap(
-                datasets_d="tests/data/datasets.d/*.xml"
-            ).datasets.values()
-            if dataset.attrs["cdm_data_type"] in ("Profile", "TimeSeriesProfile")
-        ],
-    )
     def test_dataset_cdm_profile_variables(self, dataset):
         """Test that cdm_profile_variables are valid variables in the dataset"""
+        if dataset.attrs["cdm_data_type"] not in ("Profile", "TimeSeriesProfile"):
+            return
         cdm_profile_variables = dataset.attrs.get("cdm_profile_variables", "").split(
             ","
         )
@@ -88,3 +90,7 @@ class TestCdmDataType:
         assert (
             not unknown_variables
         ), f"Dataset {dataset.dataset_id} has invalid cdm_profile_variables {unknown_variables}"
+
+
+if __name__ == "__main__":
+    pytest.main()
