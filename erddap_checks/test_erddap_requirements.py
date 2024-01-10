@@ -18,7 +18,11 @@ def get_erddap_datasets():
         raise ValueError("No datasets specified")
 
 
-@pytest.fixture(scope="module", params=get_erddap_datasets().values(), ids=get_erddap_datasets().keys())
+@pytest.fixture(
+    scope="module",
+    params=get_erddap_datasets().values(),
+    ids=get_erddap_datasets().keys(),
+)
 def dataset(request):
     yield request.param
     print(f"Finished testing {request.param.dataset_id}")
