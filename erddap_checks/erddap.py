@@ -1,5 +1,6 @@
-import glob
+import os
 import xml.etree.ElementTree as ET
+from glob import glob
 from pathlib import Path
 
 import xarray as xr
@@ -51,32 +52,33 @@ class Dataset:
 
 
 class Erddap:
-    def __init__(self, datasets_xml=None, datasets_d=None):
-        self.datasets_xml = datasets_xml
-        self.datasets_d = datasets_d
+    def __init__(self, datasets_xml=None, encoding="UTF-8"):
+        self.datasets_xml = datasets_xml or os.environ.get("ERDDAP_DATASETS_XML")
+        self.encoding = encoding
         self.tree = self._parse_datasets()
         self.datasets = {
             item.attrib["datasetID"]: Dataset(item) for item in self._get_datasets()
         }
 
     def _parse_datasets(self):
-        if self.datasets_xml:
-            datasets_xml = Path(self.datasets_xml).read_text(encoding="UTF-8")
-        elif self.datasets_d:
-            datasets_xml = self._concatenate_xml(self.datasets_d)
-        else:
-            raise ValueError("Must provide either datasets_xml or datasets_d")
-        return ET.fromstring(datasets_xml)
-
-    def _concatenate_xml(self, datasets_d):
-        xml_files = glob.glob(datasets_d)
-        datasets_xml = '<?xml version="1.0" encoding="UTF-8"?>\n'
-        datasets_xml += "<erddapDatasets>\n"
-        datasets_xml += "n".join(
-            [Path(file).read_text(encoding="UTF-8") for file in xml_files]
+        datasets_xml = "\n".join(
+            [
+                Path(file).read_text(encoding=self.encoding)
+                for file in glob(self.datasets_xml, recursive=True)
+            ]
         )
-        datasets_xml += "</erddapDatasets>\n"
-        return datasets_xml
+        if (
+            "<erddapDatasets>" not in datasets_xml
+            and "</erddapDatasets>" not in datasets_xml
+        ):
+            datasets_xml = self._wrap_datasets(datasets_xml)
+        try:
+            return ET.fromstring(datasets_xml)
+        except ET.ParseError as e:
+            raise ValueError("Failed to parse datasets.xml: {}", e)
+
+    def _wrap_datasets(self, datasets: str, encoding="UTF-8"):
+        return f'<?xml version="1.0" encoding="{encoding}"?><erddapDatasets>{datasets}</erddapDatasets>'
 
     def _get_datasets(self):
         return self.tree.findall("dataset")

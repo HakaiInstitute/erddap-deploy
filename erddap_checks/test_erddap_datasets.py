@@ -1,33 +1,20 @@
-import os
-from pathlib import Path
-
 import pytest
 from erddap import Erddap
 
-
-def get_erddap_datasets():
-    if datasets_xml := os.environ.get("ERDDAP_DATASETS_XML"):
-        return Erddap(datasets_xml=datasets_xml).datasets
-    elif datasets_d := os.environ.get("ERDDAP_DATASETS_D"):
-        return Erddap(datasets_d=datasets_d).datasets
-    elif Path("datasets.d").exists():
-        return Erddap(datasets_d="**/datasets.d/*.xml").datasets
-    elif datasets_xml := list(Path(".").glob("**/datasets.xml")):
-        return Erddap(datasets_xml=datasets_xml[0]).datasets
-    else:
-        raise ValueError("No datasets specified")
+erddap = Erddap()
 
 
 @pytest.fixture(
     scope="module",
-    params=get_erddap_datasets().values(),
-    ids=get_erddap_datasets().keys(),
+    params=erddap.datasets.values(),
+    ids=erddap.datasets.keys(),
 )
 def dataset(request):
     yield request.param
     print(f"Finished testing {request.param.dataset_id}")
 
 
+@pytest.mark.skipif(dataset == None, reason="No datasets specified")
 class TestDatasetGlobalAttributes:
     def test_dataset_cdm_data_type(self, dataset):
         """Test that cdm_data_type is valid"""
