@@ -19,5 +19,5 @@ runs:
       run: pip install .
       shell: bash
     - name: Run checks
-      run: erddap_checks ${{ inputs.datasets_xml }}
+      run: erddap_checks "${{ inputs.datasets_xml }}"
       shell: bash
