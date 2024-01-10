@@ -1,7 +1,10 @@
+import os
+from glob import glob
+
 import click
 import pytest
+
 from erddap_checks.erddap import Erddap
-import os
 
 
 def datasets():
@@ -20,14 +23,34 @@ def datasets():
 
 
 @click.command()
-@click.option("--datasets-xml", help="Path to datasets.xml", type=str)
-@click.option("--datasets-d", help="Glob expression to datasets.d/*.xml", type=str)
-def main(datasets_xml,datasets_d):
-    if datasets_d:
-        os.environ['ERDDAP_DATASETS_D'] = datasets_d
-    if datasets_xml:
-        os.environ['ERDDAP_DATASETS_XML'] = datasets_xml
-    pytest.main([])
+@click.option(
+    "--datasets-xml",
+    help="Path to datasets.xml",
+    default="**/datasets.xml",
+    envvar="ERDDAP_DATASETS_XML",
+    show_default=True,
+    type=str,
+)
+@click.option(
+    "--datasets-d",
+    help="Glob expression to datasets.d/*.xml",
+    default="datasets.d/*.xml",
+    envvar="ERDDAP_DATASETS_D",
+    show_default=True,
+    type=str,
+)
+@click.option("-k", help="Run tests by keyword expressions", type=str)
+def main(datasets_xml, datasets_d, k):
+    """Run a series of tests on ERDDAP datasets"""
+    if datasets_d and glob(datasets_d):
+        os.environ["ERDDAP_DATASETS_D"] = datasets_d
+    if datasets_xml and glob(datasets_xml):
+        os.environ["ERDDAP_DATASETS_XML"] = glob(datasets_xml)[0]
+    args = []
+    if k:
+        args.extend(["-k", k])
+    pytest.main(args)
+
 
 if __name__ == "__main__":
     main()
