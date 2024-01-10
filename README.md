@@ -5,7 +5,8 @@
 
 ## How to
 
-Install the package: 
+Install the package:
+
 ```console
 pip install git+https://github.com/HakaiInstitute/erddap-checks.git
 ```
@@ -17,7 +18,7 @@ erddap_checks --datasets.d
 ```
 
 For options:
+
 ```console
 erddap_checks --help
 ```
-
