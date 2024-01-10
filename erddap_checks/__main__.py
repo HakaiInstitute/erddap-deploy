@@ -32,7 +32,9 @@ def main(datasets_xml, test_filter):
     if test_filter:
         args.extend(["-k", test_filter])
     logger.info(f"Run pytest.main({args})")
-    return pytest.main(args).value
+    result = pytest.main(args).value
+    if result:
+        raise SystemExit(result) 
 
 
 if __name__ == "__main__":
