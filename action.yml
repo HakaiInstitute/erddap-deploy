@@ -17,5 +17,7 @@ runs:
         python-version: "3.11"
     - name: Install Dependencies
       run: pip install .
+      shell: bash
     - name: Run checks
       run: erddap_checks ${{ inputs.datasets_xml }}
+      shell: bash
