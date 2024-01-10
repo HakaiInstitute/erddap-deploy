@@ -1,0 +1,18 @@
+# .github/workflows/test_action.yaml
+name: Test Action
+on: [push]
+
+jobs:
+  run_erddap_checks:
+    runs-on: ubuntu-latest
+    name: Returns the number square
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: run erddap_checks
+        id: erdda_checks
+        uses: ./ # Uses an action in the root directory
+        # or use a released GitHub Action
+        # uses: shipyard/github-action/fetch-shipyard-env@1.0.0
+        with:
+          datasets_xml: tests/data/datasets.d/*.xml
