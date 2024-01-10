@@ -3,14 +3,16 @@ name: "erddap-checks"
 description: "Run a series of checks on an erddap configuration repository.
   This action is intended to be run prior to deploying an erddap instance."
 inputs:
-  num:
-    datasets_xml: "Path to the datasets.xml file to be checked.
+  datasets_xml:
+    description: "Path to the datasets.xml file to be checked.
       It could be a glob expression."
     required: false
     default: ""
 runs:
   using: "composite"
   steps:
+    - name: Checkout
+      uses: actions/checkout@v4
     - name: Install Python
       uses: actions/setup-python@v4
       with:
