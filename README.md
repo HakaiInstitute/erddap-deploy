@@ -9,7 +9,7 @@ Add the following step to your GitHub Action.
 
 ```yaml
       - name: Run erddap-checks
-        uses: hakaiinstitute/erddap-checks@main
+        uses: hakaiinstitute/erddap-checks@v1
         with:
             datasets_xml: "optional path to datasets.xml or datasets.d/*.xml"
 ```
