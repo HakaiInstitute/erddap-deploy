@@ -1,0 +1,21 @@
+# action.yaml
+name: 'erddap-checks'
+description: 'Run a series of checks on an erddap configuration repository. 
+  This action is intended to be run prior to deploying an erddap instance.'
+inputs:
+  num:
+    datasets_xml: 'Path to the datasets.xml file to be checked. It could be a glob expression.'
+    required: false
+    default: "**/datasets.xml"
+runs:
+  using: 'composite'
+  steps:
+    - name: Install Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: '3.11'  
+    - name: Install Dependencies
+      run: pip install .
+      shell: bash
+    - name: Run checks
+      run: erddap_checks ${{ inputs.datasets_xml }}
