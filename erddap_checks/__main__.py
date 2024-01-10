@@ -22,7 +22,7 @@ def main(datasets_xml, test_filter):
         if len(datasets_xml) > 1:
             raise ValueError("Only one path can be specified")
         datasets_xml = datasets_xml[0]
-    if glob("**/datasets.xml", recursive=True):
+    elif glob("**/datasets.xml", recursive=True):
         logger.info("Load **/datasets.xml")
         datasets_xml = "**/datasets.xml"
     elif glob("**/datasets.d/*.xml", recursive=True):
