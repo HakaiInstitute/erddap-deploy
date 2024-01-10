@@ -9,16 +9,11 @@ from erddap_checks.erddap import Erddap
 
 
 @click.command()
-@click.argument(
-    "datasets_xml",
-    envvar="ERDDAP_DATASETS_XML",
-    type=str,
-    nargs=-1
-)
+@click.argument("datasets_xml", envvar="ERDDAP_DATASETS_XML", type=str, nargs=-1)
 @click.option("-k", "--test-filter", help="Run tests by keyword expressions", type=str)
 def main(datasets_xml, test_filter):
     """Run a series of tests on ERDDAP datasets"""
-    if  datasets_xml:
+    if datasets_xml:
         if len(datasets_xml) > 1:
             raise ValueError("Only one path can be specified")
         datasets_xml = datasets_xml[0]
@@ -30,7 +25,7 @@ def main(datasets_xml, test_filter):
         datasets_xml = "**/datasets.d/*.xml"
     else:
         raise ValueError("No datasets.xml found")
-    
+
     logger.info(f"Load datasets_xml={datasets_xml}")
     os.environ["ERDDAP_DATASETS_XML"] = datasets_xml
     args = ["--pyargs", "erddap_checks"]

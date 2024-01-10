@@ -1,4 +1,5 @@
 import pytest
+
 from erddap_checks.erddap import Erddap
 
 erddap = Erddap()
