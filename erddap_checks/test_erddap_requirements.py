@@ -5,28 +5,26 @@ import pytest
 from erddap import Erddap
 
 
-def datasets():
+def get_erddap_datasets():
     if datasets_xml := os.environ.get("ERDDAP_DATASETS_XML"):
         return Erddap(datasets_xml=datasets_xml).datasets
     elif datasets_d := os.environ.get("ERDDAP_DATASETS_D"):
         return Erddap(datasets_d=datasets_d).datasets
     elif Path("datasets.d").exists():
-        return Erddap(datasets_d="datasets.d/*.xml").datasets
+        return Erddap(datasets_d="**/datasets.d/*.xml").datasets
     elif datasets_xml := list(Path(".").glob("**/datasets.xml")):
         return Erddap(datasets_xml=datasets_xml[0]).datasets
-    elif datasets_d := list(Path(".").glob("**/datasets.d")):
-        return Erddap(datasets_d=str(datasets_d[0]) + "/*.xml").datasets
     else:
         raise ValueError("No datasets specified")
 
 
-@pytest.fixture(scope="module", params=datasets().values(), ids=datasets().keys())
+@pytest.fixture(scope="module", params=get_erddap_datasets().values(), ids=get_erddap_datasets().keys())
 def dataset(request):
     yield request.param
     print(f"Finished testing {request.param.dataset_id}")
 
 
-class TestDataset:
+class TestDatasetGlobalAttributes:
     def test_dataset_cdm_data_type(self, dataset):
         """Test that cdm_data_type is valid"""
         assert dataset.attrs["cdm_data_type"] in (
