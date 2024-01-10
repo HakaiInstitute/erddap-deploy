@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "erddap-checks"
-version = "0.1.0"
+version = "1.0.1"
 description = "Run a series of tests on the different ERDDAP components which helps resolving the different issues related to an ERDDAP deployment"
 authors = ["Jessy Barrette <30420025+JessyBarrette@users.noreply.github.com>"]
 readme = "README.md"
