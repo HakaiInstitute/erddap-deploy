@@ -31,11 +31,12 @@ def main(datasets_xml, test_filter):
     else:
         raise ValueError("No datasets.xml found")
     
-
+    logger.info(f"Load datasets_xml={datasets_xml}")
     os.environ["ERDDAP_DATASETS_XML"] = datasets_xml
-    args = []
+    args = ["--pyargs", "erddap_checks"]
     if test_filter:
         args.extend(["-k", test_filter])
+    logger.info(f"Run pytest.main({args})")
     pytest.main(args)
 
 
