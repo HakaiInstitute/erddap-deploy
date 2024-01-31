@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{include = "erddap_deploy"}]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = "^3.10"
 pytest = "^7.4.3"
 lxml = "^4.9.3"
 xarray = "^2023.12.0"
