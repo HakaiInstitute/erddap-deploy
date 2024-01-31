@@ -143,7 +143,7 @@ def test(ctx, test_filter):
     def erddap():
         return ctx.obj["erddap"]
 
-    args = ["--pyargs", "erddap_checks"]
+    args = ["--pyargs", "erddap_deploy"]
     if test_filter:
         args.extend(["-k", test_filter])
     logger.info(f"Run pytest.main({args})")
