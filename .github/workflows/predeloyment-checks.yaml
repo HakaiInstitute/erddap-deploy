@@ -25,4 +25,4 @@ jobs:
           pip install .
 
       - name: Run erddap_checks with test directory
-        run: erddap_checks
+        run: erddap_deploy test

@@ -12,7 +12,7 @@ jobs:
         with: 
             fetch-depth: 0
       - name: run erddap_checks
-        id: erddap_checks
+        id: erddap_deploy
         uses: ./ # Uses an action in the root directory
         with:
           datasets_xml: tests/data/datasets.d/*.xml
