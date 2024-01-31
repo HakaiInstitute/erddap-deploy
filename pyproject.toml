@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "erddap-checks"
+name = "erddap-deploy"
 version = "1.0.1"
 description = "Run a series of tests on the different ERDDAP components which helps resolving the different issues related to an ERDDAP deployment"
 authors = ["Jessy Barrette <30420025+JessyBarrette@users.noreply.github.com>"]
 readme = "README.md"
-packages = [{include = "erddap_checks"}]
+packages = [{include = "erddap_deploy"}]
 
 [tool.poetry.dependencies]
 python = "^3.11"
@@ -24,4 +24,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-erddap_checks = 'erddap_checks.__main__:main'
+erddap_deploy = 'erddap_deploy.__main__:main'

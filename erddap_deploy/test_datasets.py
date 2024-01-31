@@ -3,7 +3,7 @@ import os
 import pytest
 from loguru import logger
 
-from erddap_checks.erddap import Erddap
+from erddap_deploy.erddap import Erddap
 
 erddap = Erddap(os.environ.get("ERDDAP_DATASETS_XML", "tests/data/datasets.d/*.xml"))
 

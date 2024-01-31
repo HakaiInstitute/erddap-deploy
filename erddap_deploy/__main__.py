@@ -7,7 +7,7 @@ import pytest
 from git import Repo
 from loguru import logger
 
-from erddap_checks.erddap import Erddap
+from erddap_deploy.erddap import Erddap
 
 
 @click.group()
