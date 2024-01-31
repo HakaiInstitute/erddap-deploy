@@ -1,7 +1,7 @@
 import os
 
 import pytest
-
+from loguru import logger
 from erddap_checks.erddap import Erddap
 
 erddap = Erddap(os.environ.get("ERDDAP_DATASETS_XML", "tests/data/datasets.d/*.xml"))
@@ -14,7 +14,7 @@ erddap = Erddap(os.environ.get("ERDDAP_DATASETS_XML", "tests/data/datasets.d/*.x
 )
 def dataset(request):
     yield request.param
-    print(f"Finished testing {request.param.dataset_id}")
+    logger.info(f"Finished testing {request.param.dataset_id}")
 
 
 @pytest.mark.skipif(dataset == None, reason="No datasets specified")

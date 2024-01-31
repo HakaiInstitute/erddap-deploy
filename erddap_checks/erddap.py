@@ -1,3 +1,4 @@
+import copy
 import os
 import xml.etree.ElementTree as ET
 from glob import glob
@@ -52,19 +53,52 @@ class Dataset:
 
 
 class Erddap:
-    def __init__(self, datasets_xml=None, encoding="UTF-8"):
-        self.datasets_xml = datasets_xml or os.environ.get("ERDDAP_DATASETS_XML")
+    def __init__(self, datasets_xml=None, encoding="UTF-8", recursive: bool = True):
+        self.datasets_xml = datasets_xml
+        self.recursive = recursive
         self.encoding = encoding
         self.tree = self._parse_datasets()
         self.datasets = {
             item.attrib["datasetID"]: Dataset(item) for item in self._get_datasets()
         }
 
+    def diff(self, other):
+        """Compare two Erddap objects and return a list of datasets that are different"""
+        other_erddap = other if isinstance(other, Erddap) else Erddap(other)
+        for datesetID, dataset in self.datasets.items():
+            other_dataset = other_erddap.datasets.get(datesetID)
+            if other_dataset is None:
+                yield dataset
+            elif dataset != other_dataset:
+                yield dataset
+
+    def to_xml(self, output=None, secrets: dict = None):
+        """Write the Erddap object to xml"""
+        xml = f'<?xml version="1.0" encoding="{self.encoding}"?>\n' + ET.tostring(
+            self.tree, encoding=self.encoding
+        ).decode(self.encoding)
+
+        # handle secrets
+        for key, value in (secrets or {}).items():
+            xml = xml.replace(f"{{{key}}}", value)
+
+        if output is None:
+            return xml
+        Path(output).write_text(xml, encoding=self.encoding)
+
+    def copy(self):
+        """Get a copy of the Erddap object"""
+        return copy(self)
+
     def _parse_datasets(self):
         datasets_xml = "\n".join(
             [
                 Path(file).read_text(encoding=self.encoding)
-                for file in glob(self.datasets_xml, recursive=True)
+                for file in (
+                    self.datasets_xml
+                    if isinstance(self.datasets_xml, list)
+                    else glob(self.datasets_xml, recursive=self.recursive)
+                )
             ]
         )
         if (
