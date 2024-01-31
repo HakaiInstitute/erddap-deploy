@@ -16,7 +16,6 @@ from erddap_checks.erddap import Erddap
 )
 @click.option(
     "--datasets-d",
-    "-dd",
     envvar="ERDDAP_DATASETS_XML",
     type=str,
     multiple=True,
