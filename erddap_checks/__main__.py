@@ -111,7 +111,7 @@ def sync(ctx, repo, branch, path, hard_flag, hard_flag_dir):
         repo = Repo.clone_from(repo, path)
     else:
         repo = Repo(path)
-    
+
     logger.info(f"Checkout branch {branch}")
     repo.git.checkout(branch)
 
@@ -140,11 +140,10 @@ def sync(ctx, repo, branch, path, hard_flag, hard_flag_dir):
 def test(ctx, test_filter):
     """Run a series of tests on repo ERDDAP datasets"""
 
-
     @pytest.fixture(scope="session")
     def erddap():
         return ctx.obj["erddap"]
-    
+
     args = ["--pyargs", "erddap_checks"]
     if test_filter:
         args.extend(["-k", test_filter])
