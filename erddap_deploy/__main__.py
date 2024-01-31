@@ -86,7 +86,7 @@ def save(ctx, output):
     help="Where were to clone the repo",
     type=str,
     default="erddap-datasets",
-    envvar="ERDDAP_DATASETS_DIR",
+    envvar="ERDDAP_DATASETS_REPO_DIR",
 )
 @click.option(
     "-f",
