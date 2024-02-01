@@ -13,14 +13,12 @@ from erddap_deploy.erddap import Erddap
 @click.group()
 @click.option(
     "--datasets-xml",
-    envvar="ERDDAP_DATASET_XML",
     type=str,
     help="Path to datasets.xml",
     default="/usr/local/tomcat/content/erddap/datasets.xml",
 )
 @click.option(
     "--datasets-d",
-    envvar="ERDDAP_DATASETS_XML",
     type=str,
     help="Glob expresion to datasets.d xmls",
     default="datasets.d/*.xml",
@@ -29,7 +27,6 @@ from erddap_deploy.erddap import Erddap
 @click.option(
     "--recursive",
     "-r",
-    envvar="ERDDAP_DATASETS_XML_RECURSIVE",
     type=bool,
     is_flag=True,
     default=True,
@@ -38,7 +35,6 @@ from erddap_deploy.erddap import Erddap
 )
 @click.option(
     "--big-parent-directory",
-    envvar="ERDDAP_BIG_PARENT_DIRECTORY",
     help="ERDDAP bigParentDirectory",
     type=str,
     default="/erddapData",
@@ -180,4 +176,4 @@ def test(ctx, test_filter):
 
 
 if __name__ == "__main__":
-    main()
+    main(auto_var_prefix='ERDDAP')

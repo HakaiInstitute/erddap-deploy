@@ -1,45 +1,51 @@
 {
-    // Use IntelliSense to learn about possible attributes.
-    // Hover to view descriptions of existing attributes.
-    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
-    "version": "0.2.0",
-    "configurations": [
-
-
-
-
-
-        {
-            "name": "Python: Test all",
-            "type": "python",
-            "request": "launch",
-            "program": "erddap_checks",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "tests/data/datasets.d/*.xml"   
-            ]
-        },
-        {
-            "name": "Python: no arguments",
-            "type": "python",
-            "request": "launch",
-            "program": "erddap_checks",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-        },
-        {
-            "name": "Hakai datasets",
-            "type": "python",
-            "request": "launch",
-            "program": "erddap_checks",
-            "console": "integratedTerminal",
-            "justMyCode": true,
-            "args": [
-                "/Users/jessybarrette/repo/hakai-datasets/datasets.d/**/*.xml"   
-            ]
-        }
-
-
-    ]
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Python: Test all",
+      "type": "python",
+      "request": "launch",
+      "program": "erddap_deploy",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["tests/data/datasets.d/*.xml"]
+    },
+    {
+      "name": "Python: no arguments",
+      "type": "python",
+      "request": "launch",
+      "program": "erddap_deploy",
+      "console": "integratedTerminal",
+      "justMyCode": true
+    },
+    {
+      "name": "Hakai datasets",
+      "type": "python",
+      "request": "launch",
+      "program": "erddap_deploy",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": ["/Users/jessybarrette/repo/hakai-datasets/datasets.d/**/*.xml"]
+    },
+    {
+      "name": "Test sync",
+      "type": "python",
+      "request": "launch",
+      "program": "erddap_deploy",
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "args": [
+        "sync",
+        "--repo",
+        "https://github.com/HakaiInstitute/erddap-deploy.git",
+        "--branch",
+        "main",
+        "--local-repo-path",
+        "temp"
+      ]
+    }
+  ]
 }
