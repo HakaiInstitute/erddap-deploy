@@ -22,7 +22,6 @@ from erddap_deploy.erddap import Erddap
     "--datasets-d",
     envvar="ERDDAP_DATASETS_XML",
     type=str,
-    multiple=True,
     help="Glob expresion to datasets.d xmls",
     default="datasets.d/*.xml",
     show_default=True,
@@ -121,11 +120,13 @@ def save(ctx, output):
     "--hard-flag-dir",
     help="Directory to save hard flag",
     type=str,
-    default="{ERDDAP_DATA}/erddap/hardFlag",
+    default="{bigParentDirectory}/erddap/hardFlag",
 )
 @click.pass_context
-def sync(ctx, repo, branch, local_repo_path, hard_flag=True, hard_flag_dir="hardFlag"):
+def sync(ctx, repo, branch, local_repo_path, hard_flag, hard_flag_dir):
     """Sync datasets.xml from a git repo"""
+
+    hard_flag_dir = hard_flag_dir.format(**ctx.obj)
 
     if not Path(local_repo_path).exists() or not list(
         Path(local_repo_path).glob("**/*")
