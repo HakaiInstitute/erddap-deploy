@@ -1,6 +1,6 @@
-import copy
-import os
+import difflib
 import xml.etree.ElementTree as ET
+from copy import copy
 from glob import glob
 from pathlib import Path
 
@@ -51,26 +51,27 @@ class Dataset:
         }
         return xr.Dataset(vars=vars, attrs=self.attrs)
 
+    def to_xml(self, output=None):
+        return ET.tostring(self.dataset).decode("UTF-8")
+
 
 class Erddap:
     def __init__(self, datasets_xml=None, encoding="UTF-8", recursive: bool = True):
         self.datasets_xml = datasets_xml
         self.recursive = recursive
         self.encoding = encoding
-        self.tree = self._parse_datasets()
-        self.datasets = {
-            item.attrib["datasetID"]: Dataset(item) for item in self._get_datasets()
-        }
+        self.load()
 
     def diff(self, other):
         """Compare two Erddap objects and return a list of datasets that are different"""
         other_erddap = other if isinstance(other, Erddap) else Erddap(other)
-        for datesetID, dataset in self.datasets.items():
-            other_dataset = other_erddap.datasets.get(datesetID)
-            if other_dataset is None:
-                yield dataset
-            elif dataset != other_dataset:
-                yield dataset
+        return {
+            datasetID: difflib.context_diff(
+                dataset.to_xml(), other_erddap.datasets.get(datasetID).to_xml()
+            )
+            for datasetID, dataset in self.datasets.items()
+            if dataset == other_erddap.datasets.get(datasetID)
+        }
 
     def to_xml(self, output=None, secrets: dict = None):
         """Write the Erddap object to xml"""
@@ -119,3 +120,9 @@ class Erddap:
 
     def _get_dataset_variables(self, dataset, key="destinationName"):
         return [item.text for item in dataset.findall(f".//dataVariable/{key}")]
+
+    def load(self):
+        self.tree = self._parse_datasets()
+        self.datasets = {
+            item.attrib["datasetID"]: Dataset(item) for item in self._get_datasets()
+        }

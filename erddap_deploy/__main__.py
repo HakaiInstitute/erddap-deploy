@@ -1,6 +1,6 @@
 import os
 import sys
-from glob import glob
+from pathlib import Path
 
 import click
 import pytest
@@ -12,7 +12,11 @@ from erddap_deploy.erddap import Erddap
 
 @click.group()
 @click.option(
-    "--datasets-xml", envvar="ERDDAP_DATASET_XML", type=str, help="Path to datasets.xml"
+    "--datasets-xml",
+    envvar="ERDDAP_DATASET_XML",
+    type=str,
+    help="Path to datasets.xml",
+    default="/usr/local/tomcat/content/erddap/datasets.xml",
 )
 @click.option(
     "--datasets-d",
@@ -20,7 +24,7 @@ from erddap_deploy.erddap import Erddap
     type=str,
     multiple=True,
     help="Glob expresion to datasets.d xmls",
-    default=None,
+    default="datasets.d/*.xml",
     show_default=True,
 )
 @click.option(
@@ -33,9 +37,24 @@ from erddap_deploy.erddap import Erddap
     show_default=True,
     help="Search for datasets.d xmls recursively",
 )
+@click.option(
+    "--bigParentDirectory",
+    envvar="ERDDAP_BIG_PARENT_DIRECTORY",
+    help="ERDDAP bigParentDirectory",
+    type=str,
+    default="/erddapData",
+    show_default=True,
+)
 @click.option("--log-level", default="INFO", help="Logging level", type=str)
 @click.pass_context
-def main(ctx, datasets_xml, datasets_d, recursive, log_level):
+def main(
+    ctx,
+    datasets_xml,
+    datasets_d,
+    recursive,
+    bigParentDirectory,
+    log_level,
+):
     logger.remove()
     logger.add(
         sys.stderr,
@@ -43,29 +62,31 @@ def main(ctx, datasets_xml, datasets_d, recursive, log_level):
     )
 
     logger.debug("Load erddap dataset")
-    if datasets_xml:
-        logger.info("Load datasets_xml={datasets_xml}")
-        erddap = Erddap(datasets_xml)
-    elif datasets_d:
-        logger.info("Load datasets_d={datasets_d}")
+    if datasets_d:
+        logger.info("Load datasets_d={}", datasets_d)
         erddap = Erddap(datasets_d, recursive=recursive)
-    elif glob("**/datasets.xml", recursive=recursive):
-        logger.info("Load **/datasets.xml")
-        erddap = Erddap(glob("**/datasets.xml", recursive=recursive))
-    elif glob("**/datasets.d/*.xml", recursive=recursive):
-        logger.info("Load **/datasets.d/*.xml folder")
-        erddap = Erddap(glob("**/datasets.d/*.xml", recursive=recursive))
+    elif Path(datasets_xml).exists():
+        logger.info("Load datasets_xml={}", datasets_xml)
+        erddap = Erddap(datasets_xml)
     else:
         logger.error("No datasets.xml found")
         erddap = None
     logger.info("Load datasets_xml={datasets_xml}")
 
     ctx.ensure_object(dict)
-    ctx.obj["erddap"] = erddap
+    ctx.obj.update(
+        dict(
+            erddap=erddap,
+            datasets_xml=datasets_xml,
+            datasets_d=datasets_d,
+            recursive=recursive,
+            bigParentDirectory=bigParentDirectory,
+        )
+    )
 
 
 @main.command()
-@click.option("-o", "--output", help="Output file", type=str)
+@click.option("-o", "--output", help="Output file", type=str, default="{dataset_xml}")
 @click.pass_context
 def save(ctx, output):
     """Save datasets.xml"""
@@ -74,6 +95,7 @@ def save(ctx, output):
         key: value for key, value in os.environ if key.startswith("ERDDAP_SECRET_")
     }
     logger.info(" Include secrets={}", secrets.keys())
+    output = output.format(**ctx.obj)
     return ctx["erddap"].to_xml(output=output, secrets=secrets)
 
 
@@ -102,33 +124,37 @@ def save(ctx, output):
     default="{ERDDAP_DATA}/erddap/hardFlag",
 )
 @click.pass_context
-def sync(ctx, repo, branch, path, hard_flag, hard_flag_dir):
+def sync(ctx, repo, branch, local_repo_path, hard_flag=True, hard_flag_dir="hardFlag"):
     """Sync datasets.xml from a git repo"""
 
-    if not path.exists():
-        logger.info(f"Clone repo {repo} to {path}")
-        repo = Repo.clone_from(repo, path)
+    if not Path(local_repo_path).exists() or not list(
+        Path(local_repo_path).glob("**/*")
+    ):
+        logger.info(f"Clone repo {repo} to {local_repo_path}")
+        repo = Repo.clone_from(repo, local_repo_path)
     else:
-        repo = Repo(path)
+        repo = Repo(local_repo_path)
 
     logger.info(f"Checkout branch {branch}")
     repo.git.checkout(branch)
 
     logger.info("Compare active dataset vs HEAD")
-    intial_erddap = ctx["erddap"].copy()
-    repo.pull()
-    updated_erddap = ctx.obj["datasets_xml"]
+    erddap = ctx.obj["erddap"]
+    intial_erddap = erddap.copy()
+    repo.git.pull()
+    erddap.load()
 
-    diff = intial_erddap.diff(updated_erddap)
+    diff = erddap.diff(intial_erddap)
 
-    if diff:
+    # If any differences, save datasets.xml
+    if any(diff.values()):
         logger.info("Update datasets.xml")
-        updated_erddap.to_xml(path)
+        erddap.to_xml(local_repo_path)
 
-    if diff and hard_flag:
-        for datatset in diff:
-            logger.info("Generate hard flag for {datatset.dataset_id}")
-            (hard_flag_dir / datatset.dataset_id).write_text("")
+        if hard_flag:
+            for datatset in diff:
+                logger.info("Generate hard flag for {datatset.dataset_id}")
+                (hard_flag_dir / datatset.dataset_id).write_text("")
 
     logger.info("Erddap datasets.xml has been updated")
 
