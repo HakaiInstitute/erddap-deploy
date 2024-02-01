@@ -37,7 +37,7 @@ from erddap_deploy.erddap import Erddap
     help="Search for datasets.d xmls recursively",
 )
 @click.option(
-    "--bigParentDirectory",
+    "--big-parent-directory",
     envvar="ERDDAP_BIG_PARENT_DIRECTORY",
     help="ERDDAP bigParentDirectory",
     type=str,
@@ -51,7 +51,7 @@ def main(
     datasets_xml,
     datasets_d,
     recursive,
-    bigParentDirectory,
+    big_parent_directory,
     log_level,
 ):
     logger.remove()
@@ -79,23 +79,23 @@ def main(
             datasets_xml=datasets_xml,
             datasets_d=datasets_d,
             recursive=recursive,
-            bigParentDirectory=bigParentDirectory,
+            bigParentDirectory=big_parent_directory,
         )
     )
 
 
 @main.command()
-@click.option("-o", "--output", help="Output file", type=str, default="{dataset_xml}")
+@click.option("-o", "--output", help="Output file", type=str, default="{datasets_xml}")
 @click.pass_context
 def save(ctx, output):
     """Save datasets.xml"""
     logger.info("Convert to xml")
     secrets = {
-        key: value for key, value in os.environ if key.startswith("ERDDAP_SECRET_")
+        key: value for key, value in os.environ.items() if key.startswith("ERDDAP_SECRET_")
     }
     logger.info(" Include secrets={}", secrets.keys())
     output = output.format(**ctx.obj)
-    return ctx["erddap"].to_xml(output=output, secrets=secrets)
+    return ctx.obj["erddap"].to_xml(output=output, secrets=secrets)
 
 
 @main.command()

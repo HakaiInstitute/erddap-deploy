@@ -44,8 +44,8 @@ class TestErddapDeploySync:
 
 
 class TestErddapDeploySave:
-    def test_save(self):
-        result = run_cli("save")
+    def test_save(self,tmp_path):
+        result = run_cli("save", "--output", f"{tmp_path}/datasets.xml")
         assert result.exit_code == 0
 
     def test_save_help(self):
