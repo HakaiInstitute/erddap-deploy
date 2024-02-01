@@ -87,7 +87,9 @@ def save(ctx, output):
     """Save datasets.xml"""
     logger.info("Convert to xml")
     secrets = {
-        key: value for key, value in os.environ.items() if key.startswith("ERDDAP_SECRET_")
+        key: value
+        for key, value in os.environ.items()
+        if key.startswith("ERDDAP_SECRET_")
     }
     logger.info(" Include secrets={}", secrets.keys())
     output = output.format(**ctx.obj)
@@ -135,6 +137,7 @@ def sync(ctx, repo, branch, local_repo_path, hard_flag, hard_flag_dir):
     logger.info(f"Checkout branch {branch}")
     repo.git.checkout(branch)
 
+    # compare active dataset vs HEAD
     logger.info("Compare active dataset vs HEAD")
     erddap = ctx.obj["erddap"]
     intial_erddap = erddap.copy()
@@ -143,15 +146,16 @@ def sync(ctx, repo, branch, local_repo_path, hard_flag, hard_flag_dir):
 
     diff = erddap.diff(intial_erddap)
 
-    # If any differences, save datasets.xml
+    # If any differences, update datasets.xml
     if any(diff.values()):
         logger.info("Update datasets.xml")
         erddap.to_xml(local_repo_path)
 
-        if hard_flag:
-            for datatset in diff:
-                logger.info("Generate hard flag for {datatset.dataset_id}")
-                (hard_flag_dir / datatset.dataset_id).write_text("")
+    if hard_flag:
+        for datasetID, datasetDiff in diff.items():
+            logger.info("Generate hard flag for {datatset.dataset_id}")
+            logger.debug("Diff: {}", datasetDiff)
+            (hard_flag_dir / datasetID).write_text("")
 
     logger.info("Erddap datasets.xml has been updated")
 
@@ -176,4 +180,4 @@ def test(ctx, test_filter):
 
 
 if __name__ == "__main__":
-    main(auto_var_prefix='ERDDAP')
+    main(auto_var_prefix="ERDDAP")
