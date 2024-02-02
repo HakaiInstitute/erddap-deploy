@@ -1,0 +1,91 @@
+# test-datasets-xml.yaml
+---
+name: "erddap-sync-datasets-xml"
+description: "Run a series of checks on an erddap configuration repository.
+  This action is intended to be run prior to deploying an erddap instance."
+inputs:
+  datasets_xml:
+    description: "Path to the datasets.xml file to be checked.
+      It could be a glob expression."
+    required: false
+    default: "**/datasets.xml|**/datasets.d/*.xml"
+  recursive:
+    description: "If true, subdirectories will be searched for datasets.xml
+      files."
+    required: false
+    default: "true"
+  active_dataset_xml:
+    description: "Path to the active datasets.xml file."
+    required: false
+    default: "datasets.xml"
+  bigParentDirectory:
+    description: "The big parent directory to sync the datasets.xml file to."
+    required: false
+    default: "/erddapData"
+  container_name:
+    description: "The container to sync the datasets.xml file to."
+    required: true
+  repo:
+    description: "The repository to sync the datasets.xml file to."
+    required: false
+    default: "erddap-config"
+  branch:
+    description: "The branch to sync the datasets.xml file to."
+    required: false
+    default: "main"
+  local_repo_path:
+    description: "The local path within the container where the present
+      repository is cloned."
+    required: false
+    default: "/datasets-xml-repo"
+  hard_flag:
+    description: "Generate hard flags on datasets changes."
+    required: false
+    default: "true"
+  hard_flag_dir:
+    description: "The directory to store the hard flags."
+    required: false
+    default: "{bigParentDirectory}/erddap/hardFlags"
+  ssh_username:
+    description: "The ssh user to connecto the erddap server."
+    required: true
+    default: ${{ secrets.HOST }}
+  ssh_host:
+    description: "The ssh host to connecto the erddap server."
+    required: true
+    default: ${{ secrets.USERNAME }}
+  ssh_key:
+    description: "The ssh key to connecto the erddap server."
+    required: false
+    default: ${{ secrets.SSH_KEY }}
+  ssh_port:
+    description: "The ssh port to connecto the erddap server."
+    required: false
+    default: ${{ secrets.PORT }}
+runs:
+  using: "composite"
+  steps:
+    - name: Sync ERDDAP
+      uses: appleboy/ssh-action@v0.1.10
+      with:
+        host: ${{ inputs.ssh_host }}
+        username: ${{ input.ssh_username }}
+        key: ${{ input.ssh_key }}
+        port: ${{ input.ssh_port }}
+        command_timeout: 30m
+        script: |
+          docker exec
+          $(docker ps --filter name=${{ inputs.container_name }} -q)
+          erddap_deploy
+          --datasets-xml "${{ inputs.datasets_xml }}"
+          --recursive ${{ inputs.recursive }}
+          --active-dataset-xml ${{ inputs.active_dataset_xml }}
+          --big-parent-directory ${{ inputs.bigParentDirectory }}
+          sync
+          --repo ${{ inputs.repo }}
+          --branch ${{ inputs.branch }}
+          --local-repo-path ${{ inputs.local_repo_path }}
+          --hard-flag ${{ inputs.hard_flag }}
+          --hard-flag-dir ${{ inputs.hard_flag_dir }}
+
+      shell: bash

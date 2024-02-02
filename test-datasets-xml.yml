@@ -1,5 +1,6 @@
-# action.yaml
-name: "erddap-deploy"
+# test-datasets-xml.yaml
+---
+name: "erddap-predeployment-checks"
 description: "Run a series of checks on an erddap configuration repository.
   This action is intended to be run prior to deploying an erddap instance."
 inputs:
@@ -7,7 +8,11 @@ inputs:
     description: "Path to the datasets.xml file to be checked.
       It could be a glob expression."
     required: false
-    default: ""
+    default: "**/datasets.xml|**/datasets.d/*.xml"
+  recursive:
+    description: "If true, subdirectories will be searched for datasets.xml files."
+    required: false
+    default: "true"
 runs:
   using: "composite"
   steps:
@@ -19,5 +24,8 @@ runs:
       run: pip install ${{ github.action_path }}
       shell: bash
     - name: Run checks
-      run: erddap_checks "${{ inputs.datasets_xml }}" test
-      shell: bash
+      run: |
+        erddap_deploy
+        --datasets-xml "${{ inputs.datasets_xml }}"
+        --recursive ${{ inputs.recursive }}
+        test

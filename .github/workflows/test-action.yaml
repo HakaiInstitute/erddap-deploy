@@ -11,8 +11,8 @@ jobs:
         uses: actions/checkout@v4
         with: 
             fetch-depth: 0
-      - name: run erddap_checks
+      - name: run erddap_predeployment-checks
         id: erddap_deploy
-        uses: ./ # Uses an action in the root directory
+        uses: ./test-datasets-xml.yml # Uses an action in the root directory
         with:
           datasets_xml: tests/data/datasets.d/*.xml
