@@ -1,4 +1,4 @@
-name: Predeployment Checks
+name: Testing erddap-deploy with pytest
 
 on:
   push:
@@ -25,4 +25,4 @@ jobs:
           pip install .
 
       - name: Run erddap_checks with test directory
-        run: erddap_deploy test
+        run: pytest .
