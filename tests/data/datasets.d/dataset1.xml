@@ -27,7 +27,7 @@
 		<att name="standard_name_vocabulary">CF Standard Name Table v79</att>
 <att name="subsetVariables">filename, instrument_serial_number, instrument_model,station,latitude, longitude</att>
 		<att name="summary">this is a summary</att>
-		<att name="title">titlel</att>
+		<att name="title">title</att>
 	</addAttributes>
 	<dataVariable>
 		<sourceName>filename</sourceName>

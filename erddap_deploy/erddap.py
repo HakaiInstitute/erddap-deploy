@@ -1,10 +1,13 @@
 import difflib
+import os
 import xml.etree.ElementTree as ET
 from copy import copy
 from glob import glob
 from pathlib import Path
 
 import xarray as xr
+from typing import Union
+from loguru import logger
 
 
 class Variable:
@@ -29,6 +32,18 @@ class Dataset:
         self.active = self.dataset.attrib.get("active", "true") == "true"
         self.attrs = self._get_global_attributes()
         self.variables = self._get_variables()
+
+    def __repr__(self) -> str:
+        return f"<datasetID={self.dataset_id}>"
+    
+    def __str__(self) -> str:
+        return self.to_xml()
+
+    def __equal__(self,other):
+        if not isinstance(other, Erddap):
+            return False
+        return self.to_xml() == other.to_xml()
+    
 
     def _get_global_attributes(self):
         return {
@@ -56,73 +71,123 @@ class Dataset:
 
 
 class Erddap:
-    def __init__(self, datasets_xml=None, encoding="UTF-8", recursive: bool = True):
-        self.datasets_xml = datasets_xml
+    def __init__(
+        self,
+        datasets_xml_dir,
+        secrets: dict = None,
+        encoding: str = "UTF-8",
+        recursive: bool = True,
+        lazy_load: bool = False,
+    ):
+        self.datasets_xml_dir = datasets_xml_dir
         self.recursive = recursive
         self.encoding = encoding
-        self.load()
-
-    def diff(self, other):
-        """Compare two Erddap objects and return a list of datasets that are different"""
-        other_erddap = other if isinstance(other, Erddap) else Erddap(other)
-        return {
-            datasetID: difflib.context_diff(
-                dataset.to_xml(), other_erddap.datasets.get(datasetID).to_xml()
-            )
-            for datasetID, dataset in self.datasets.items()
-            if dataset == other_erddap.datasets.get(datasetID)
+        self.secrets = self._get_secrets(secrets)
+        self.datasets_xml = None
+        self.tree = None
+        self.datasets = {}
+        if not lazy_load:
+            self.load()
+    
+    
+    @staticmethod
+    def _get_secrets(input_secrets: dict = None):
+        """Get secrets from environment variables and merge them with the provided secrets"""
+        secrets = {
+            key: value
+            for key, value in os.environ.items()
+            if key.startswith("ERDDAP_SECRET_")
         }
+        secrets.update(input_secrets or {})
+        return secrets
 
-    def to_xml(self, output=None, secrets: dict = None):
-        """Write the Erddap object to xml"""
-        xml = f'<?xml version="1.0" encoding="{self.encoding}"?>\n' + ET.tostring(
-            self.tree, encoding=self.encoding
-        ).decode(self.encoding)
-
-        # handle secrets
-        for key, value in (secrets or {}).items():
-            xml = xml.replace(f"{{{key}}}", value)
-
-        if output is None:
-            return xml
-        Path(output).write_text(xml, encoding=self.encoding)
-
-    def copy(self):
-        """Get a copy of the Erddap object"""
-        return copy(self)
-
-    def _parse_datasets(self):
+    def _load_datasets_xml(self):
+        """Load datasets.xml from dataset_xml_dir and wrap it in <erddapDatasets> if necessary"""
         datasets_xml = "\n".join(
             [
                 Path(file).read_text(encoding=self.encoding)
-                for file in (
-                    self.datasets_xml
-                    if isinstance(self.datasets_xml, list)
-                    else glob(self.datasets_xml, recursive=self.recursive)
-                )
+                for search in self.datasets_xml_dir.split('|')
+                for file in  glob( search, recursive=self.recursive)
             ]
         )
         if (
             "<erddapDatasets>" not in datasets_xml
             and "</erddapDatasets>" not in datasets_xml
         ):
-            datasets_xml = self._wrap_datasets(datasets_xml)
+            datasets_xml = f'<?xml version="1.0" encoding="{self.encoding}"?><erddapDatasets>{datasets_xml}</erddapDatasets>'
+
+        self.datasets_xml = datasets_xml
+
+    def _replace_secrets(self):
+        """Replace secrets in the datasets_xml"""
+        for key, value in self.secrets.items():
+            self.datasets_xml = self.datasets_xml.replace(f"{{{key}}}", value)
+
+    def _parse_datasets(self):
+        """Parse datasets.xml and return the tree"""
         try:
-            return ET.fromstring(datasets_xml)
+            self.tree = ET.fromstring(self.datasets_xml)
         except ET.ParseError as e:
             raise ValueError("Failed to parse datasets.xml: {}", e)
 
-    def _wrap_datasets(self, datasets: str, encoding="UTF-8"):
-        return f'<?xml version="1.0" encoding="{encoding}"?><erddapDatasets>{datasets}</erddapDatasets>'
-
     def _get_datasets(self):
-        return self.tree.findall("dataset")
-
-    def _get_dataset_variables(self, dataset, key="destinationName"):
-        return [item.text for item in dataset.findall(f".//dataVariable/{key}")]
+        if self.tree is None:
+            raise ValueError("No datasets.xml parsed")
+        self.datasets = {
+            item.attrib["datasetID"]: Dataset(item)
+            for item in self.tree.findall("dataset")
+        }
 
     def load(self):
-        self.tree = self._parse_datasets()
-        self.datasets = {
-            item.attrib["datasetID"]: Dataset(item) for item in self._get_datasets()
-        }
+        """Load datasets.xml file(s), add secrets and parse it into a dictionary of Dataset objects"""
+        self._load_datasets_xml()
+        if self.datasets_xml is None:
+            logger.warning("No datasets.xml found")
+        self._replace_secrets()
+        self._parse_datasets()
+        self._get_datasets()
+        return self
+
+    def diff(self, other):
+        """Compare two Erddap objects and return a list of datasets that are different"""
+        other_erddap = other if isinstance(other, Erddap) else Erddap(other)
+        datasetIDs = set(self.datasets.keys()) | set(other_erddap.datasets.keys())
+        differences = {}
+        for datasetID in datasetIDs:
+            if datasetID not in self.datasets:
+                differences[datasetID] = f"{datasetID} not in self"
+            elif datasetID not in other_erddap.datasets:
+                differences[datasetID] = f"{datasetID} not in other"
+            elif self.datasets.get(datasetID).to_xml() != other_erddap.datasets.get(datasetID).to_xml():
+                differences[datasetID] = difflib.context_diff(
+                    str(self.datasets.get(datasetID)), str(other_erddap.datasets.get(datasetID))
+                )
+        return differences
+
+
+    def save(
+        self, output: Union[str, Path], source: str = "original", encoding: str = None
+    ):
+        """Write datasets.xml to a file
+
+        Args:
+            output (str): Path to the output file
+            source (str): Source of the datasets.xml. Can be "original" or "parsed"
+            encoding (str): Encoding of the output file
+        """
+        if source == "original":
+            if encoding and encoding != self.encoding:
+                raise ValueError(
+                    f"Cannot change encoding from {self.encoding} to {encoding} when source is original"
+                )
+
+            Path(output).write_text(self.datasets_xml, encoding=self.encoding)
+        elif source == "parsed":
+            encoding = encoding or self.encoding
+            return f'<?xml version="1.0" encoding="{self.encoding}"?>\n' + ET.tostring(
+                self.tree, encoding=self.encoding
+            ).decode(self.encoding)
+
+    def copy(self):
+        """Get a copy of the Erddap object"""
+        return copy(self)
