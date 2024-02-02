@@ -17,22 +17,22 @@ inputs:
   active_dataset_xml:
     description: "Path to the active datasets.xml file."
     required: false
-    default: "datasets.xml"
+    default: "/usr/local/tomcat/content/erddap/datasets.xml"
   bigParentDirectory:
     description: "The big parent directory to sync the datasets.xml file to."
     required: false
-    default: "/erddapData"
+    default: "{bigParentDirectory}"
   container_name:
     description: "The container to sync the datasets.xml file to."
     required: true
   repo:
     description: "The repository to sync the datasets.xml file to."
     required: false
-    default: "erddap-config"
+    default: "${{ secrets.github_repository }}"
   branch:
     description: "The branch to sync the datasets.xml file to."
     required: false
-    default: "main"
+    default: "${{ github.ref }}"
   local_repo_path:
     description: "The local path within the container where the present
       repository is cloned."
@@ -48,11 +48,11 @@ inputs:
     default: "{bigParentDirectory}/erddap/hardFlags"
   ssh_username:
     description: "The ssh user to connecto the erddap server."
-    required: true
+    required: false
     default: ${{ secrets.HOST }}
   ssh_host:
     description: "The ssh host to connecto the erddap server."
-    required: true
+    required: false
     default: ${{ secrets.USERNAME }}
   ssh_key:
     description: "The ssh key to connecto the erddap server."
