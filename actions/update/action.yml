@@ -72,7 +72,7 @@ runs:
         username: ${{ input.ssh_username }}
         key: ${{ input.ssh_key }}
         port: ${{ input.ssh_port }}
-        command_timeout: 30m
+        shell: bash
         script: |
           docker exec
           $(docker ps --filter name=${{ inputs.container_name }} -q)
@@ -87,5 +87,3 @@ runs:
           --local-repo-path ${{ inputs.local_repo_path }}
           --hard-flag ${{ inputs.hard_flag }}
           --hard-flag-dir ${{ inputs.hard_flag_dir }}
-
-      shell: bash
