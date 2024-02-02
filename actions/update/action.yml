@@ -78,12 +78,12 @@ runs:
           $(docker ps --filter name=${{ inputs.container_name }} -q)
           erddap_deploy
           --datasets-xml "${{ inputs.datasets_xml }}"
-          --recursive ${{ inputs.recursive }}
+          ${{ inputs.recursive && '--recursive'  || ''}}
           --active-dataset-xml ${{ inputs.active_dataset_xml }}
           --big-parent-directory ${{ inputs.bigParentDirectory }}
           sync
           --repo ${{ inputs.repo }}
           --branch ${{ inputs.branch }}
           --local-repo-path ${{ inputs.local_repo_path }}
-          --hard-flag ${{ inputs.hard_flag }}
+          ${{ inputs.hard_flag && '--hard-flag' || '' }}
           --hard-flag-dir ${{ inputs.hard_flag_dir }}
