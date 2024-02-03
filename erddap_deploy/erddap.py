@@ -4,9 +4,9 @@ import xml.etree.ElementTree as ET
 from copy import copy
 from glob import glob
 from pathlib import Path
+from typing import Union
 
 import xarray as xr
-from typing import Union
 from loguru import logger
 
 
@@ -35,15 +35,14 @@ class Dataset:
 
     def __repr__(self) -> str:
         return f"<datasetID={self.dataset_id}>"
-    
+
     def __str__(self) -> str:
         return self.to_xml()
 
-    def __equal__(self,other):
+    def __equal__(self, other):
         if not isinstance(other, Erddap):
             return False
         return self.to_xml() == other.to_xml()
-    
 
     def _get_global_attributes(self):
         return {
@@ -88,8 +87,7 @@ class Erddap:
         self.datasets = {}
         if not lazy_load:
             self.load()
-    
-    
+
     @staticmethod
     def _get_secrets(input_secrets: dict = None):
         """Get secrets from environment variables and merge them with the provided secrets"""
@@ -103,12 +101,22 @@ class Erddap:
 
     def _load_datasets_xml(self):
         """Load datasets.xml from dataset_xml_dir and wrap it in <erddapDatasets> if necessary"""
+        search_path = [
+            search
+            for search in self.datasets_xml_dir.split("|")
+            if glob(search, recursive=self.recursive)
+        ]
+        if not search_path:
+            logger.warning(
+                "No datasets.xml found with search path {}", self.datasets_xml
+            )
+            return
+        logger.info("Found datasets.xml with search path {}", search_path[0])
+
+        xml_files = [files for files in glob(search_path[0], recursive=self.recursive)]
+        logger.info("Found {} datasets.xml files", len(xml_files))
         datasets_xml = "\n".join(
-            [
-                Path(file).read_text(encoding=self.encoding)
-                for search in self.datasets_xml_dir.split('|')
-                for file in  glob( search, recursive=self.recursive)
-            ]
+            [Path(file).read_text(encoding=self.encoding) for file in xml_files]
         )
         if (
             "<erddapDatasets>" not in datasets_xml
@@ -143,9 +151,11 @@ class Erddap:
         self._load_datasets_xml()
         if self.datasets_xml is None:
             logger.warning("No datasets.xml found")
+            return
         self._replace_secrets()
         self._parse_datasets()
         self._get_datasets()
+        logger.info("Loaded {} datasets", len(self.datasets.keys()))
         return self
 
     def diff(self, other):
@@ -158,12 +168,15 @@ class Erddap:
                 differences[datasetID] = f"{datasetID} not in self"
             elif datasetID not in other_erddap.datasets:
                 differences[datasetID] = f"{datasetID} not in other"
-            elif self.datasets.get(datasetID).to_xml() != other_erddap.datasets.get(datasetID).to_xml():
+            elif (
+                self.datasets.get(datasetID).to_xml()
+                != other_erddap.datasets.get(datasetID).to_xml()
+            ):
                 differences[datasetID] = difflib.context_diff(
-                    str(self.datasets.get(datasetID)), str(other_erddap.datasets.get(datasetID))
+                    str(self.datasets.get(datasetID)),
+                    str(other_erddap.datasets.get(datasetID)),
                 )
         return differences
-
 
     def save(
         self, output: Union[str, Path], source: str = "original", encoding: str = None

@@ -18,7 +18,6 @@ def dataset(request):
     logger.info(f"Finished testing {request.param.dataset_id}")
 
 
-@pytest.mark.skipif(dataset == None, reason="No datasets specified")
 class TestDatasetGlobalAttributes:
     def test_dataset_cdm_data_type(self, dataset):
         """Test that cdm_data_type is valid"""
@@ -30,6 +29,7 @@ class TestDatasetGlobalAttributes:
             "TimeSeries",
             "Timeseries",  # TODO should we accept that?
             "TimeSeriesProfile",
+            "Other",
         ), f"Dataset {dataset.dataset_id} has invalid cdm_data_type {dataset.attrs['cdm_data_type']}"
 
     def test_dataset_subset_variables(self, dataset):

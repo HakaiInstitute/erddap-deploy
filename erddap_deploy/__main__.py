@@ -1,7 +1,7 @@
 import os
 import sys
-from pathlib import Path
 from glob import glob
+from pathlib import Path
 
 import click
 import pytest
@@ -9,8 +9,6 @@ from git import Repo
 from loguru import logger
 
 from erddap_deploy.erddap import Erddap
-
-
 
 
 @click.group()
@@ -58,10 +56,13 @@ def main(
         sys.stderr,
         level=log_level,
     )
-    logger.info("Load datasets.xml")
-    erddap=Erddap(datasets_xml, recursive=recursive)
+    logger.info("Load datasets.xml={} recursive={}", datasets_xml, recursive)
+
+    erddap = Erddap(datasets_xml, recursive=recursive)
     logger.info("Load active datasets.xml")
-    active_erddap=Erddap(active_datasets_xml) if Path(active_datasets_xml).exists() else None
+    active_erddap = (
+        Erddap(active_datasets_xml) if Path(active_datasets_xml).exists() else None
+    )
     if not active_erddap:
         logger.info(f"Active datasets.xml not found in {active_datasets_xml}")
 
@@ -91,7 +92,7 @@ def save(ctx, output):
 @main.command()
 @click.option("-r", "--repo", help="Path to git repo", type=str, default=None)
 @click.option("-b", "--branch", help="Branch to sync from", type=str, default=None)
-@click.option("--pull", help="Pull from remote", type=bool, default=False,is_flag=True)
+@click.option("--pull", help="Pull from remote", type=bool, default=False, is_flag=True)
 @click.option(
     "-p",
     "--local-repo-path",
@@ -123,7 +124,7 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
     hard_flag_dir = Path(hard_flag_dir.format(**ctx.obj))
 
     # Get repo if not available and checkout branch and pull
-    _link_repo(repo,branch,pull,local_repo_path)
+    _link_repo(repo, branch, pull, local_repo_path)
 
     # compare active dataset vs HEAD
     logger.info("Compare active dataset vs HEAD")
@@ -134,7 +135,7 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
     if not active_erddap:
         logger.info("Save active datasets.xml")
         erddap.save(ctx.obj["active_datasets_xml"])
-        diff = {id:None for id in erddap.datasets.keys()}
+        diff = {id: None for id in erddap.datasets.keys()}
     else:
         diff = erddap.diff(active_erddap)
 
@@ -152,7 +153,7 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
     logger.info("Erddap datasets.xml has been updated")
 
 
-def _link_repo(repo,branch,pull,local):
+def _link_repo(repo, branch, pull, local):
     """Get repo if not available and checkout branch and pull"""
     if not repo:
         return
@@ -172,16 +173,20 @@ def _link_repo(repo,branch,pull,local):
 
 @main.command()
 @click.option("-k", "--test-filter", help="Run tests by keyword expressions", type=str)
-@click.option("--active", help="Run tests on active datasets.xml, otherwise default to reference", type=bool, default=False, is_flag=True)
+@click.option(
+    "--active",
+    help="Run tests on active datasets.xml, otherwise default to reference",
+    type=bool,
+    default=False,
+    is_flag=True,
+)
 @click.pass_context
 def test(ctx, test_filter, active):
     """Run a series of tests on repo ERDDAP datasets"""
 
-    @pytest.fixture(scope="session")
-    def erddap():
-        if active:
-            return ctx.obj["active_erddap"]
-        return ctx.obj["erddap"]
+    os.environ["ERDDAP_DATASETS_XML"] = (
+        ctx.obj["active_datasets_xml"] if active else ctx.obj["datasets_xml"]
+    )
 
     args = ["--pyargs", "erddap_deploy"]
     if test_filter:
