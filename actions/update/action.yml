@@ -41,27 +41,24 @@ inputs:
   hard_flag:
     description: "Generate hard flags on datasets changes."
     required: false
-    default: "true"
+    default: true
   hard_flag_dir:
     description: "The directory to store the hard flags."
     required: false
     default: "{bigParentDirectory}/erddap/hardFlags"
   ssh_username:
     description: "The ssh user to connecto the erddap server."
-    required: false
-    default: ${{ secrets.ssh_username }}
+    required: true
   ssh_host:
     description: "The ssh host to connecto the erddap server."
-    required: false
-    default: ${{ secrets.ssh_host }}
+    required: true
   ssh_key:
     description: "The ssh key to connecto the erddap server."
-    required: false
-    default: ${{ secrets.ssh_key }}
+    required: true
   ssh_port:
     description: "The ssh port to connecto the erddap server."
     required: false
-    default: ${{ secrets.ssh_port }}
+    default: 22
 runs:
   using: "composite"
   steps:
