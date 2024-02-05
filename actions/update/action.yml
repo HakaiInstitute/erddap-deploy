@@ -69,7 +69,6 @@ runs:
         username: ${{ inputs.ssh_username }}
         key: ${{ inputs.ssh_key }}
         port: ${{ inputs.ssh_port }}
-        shell: bash
         script: |
           docker exec
           $(docker ps --filter name=${{ inputs.container_name }} -q)
