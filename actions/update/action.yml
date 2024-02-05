@@ -49,19 +49,19 @@ inputs:
   ssh_username:
     description: "The ssh user to connecto the erddap server."
     required: false
-    default: ${{ secrets.HOST }}
+    default: ${{ secrets.ssh_username }}
   ssh_host:
     description: "The ssh host to connecto the erddap server."
     required: false
-    default: ${{ secrets.USERNAME }}
+    default: ${{ secrets.ssh_host }}
   ssh_key:
     description: "The ssh key to connecto the erddap server."
     required: false
-    default: ${{ secrets.SSH_KEY }}
+    default: ${{ secrets.ssh_key }}
   ssh_port:
     description: "The ssh port to connecto the erddap server."
     required: false
-    default: ${{ secrets.PORT }}
+    default: ${{ secrets.ssh_port }}
 runs:
   using: "composite"
   steps:
