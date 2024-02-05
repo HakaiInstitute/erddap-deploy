@@ -28,7 +28,7 @@ inputs:
   repo:
     description: "The repository to sync the datasets.xml file to."
     required: false
-    default: "git@github.com:${{ github.repository }}.git"
+    default: "${{ github.repositoryURL }}"
   branch:
     description: "The branch to sync the datasets.xml file to."
     required: false
