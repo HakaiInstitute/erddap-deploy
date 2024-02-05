@@ -46,11 +46,11 @@ inputs:
     description: "The directory to store the hard flags."
     required: false
     default: "{bigParentDirectory}/erddap/hardFlags"
-  ssh_username:
-    description: "The ssh user to connecto the erddap server."
-    required: true
   ssh_host:
     description: "The ssh host to connecto the erddap server."
+    required: true
+  ssh_username:
+    description: "The ssh user to connecto the erddap server."
     required: true
   ssh_key:
     description: "The ssh key to connecto the erddap server."
