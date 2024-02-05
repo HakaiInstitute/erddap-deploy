@@ -32,7 +32,7 @@ inputs:
   branch:
     description: "The branch to sync the datasets.xml file to."
     required: false
-    default: "${{ github.ref }}"
+    default: "${{ github.ref_name }}  "
   local_repo_path:
     description: "The local path within the container where the present
       repository is cloned."
