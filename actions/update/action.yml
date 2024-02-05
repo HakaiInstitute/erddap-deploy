@@ -66,9 +66,9 @@ runs:
       uses: appleboy/ssh-action@v0.1.10
       with:
         host: ${{ inputs.ssh_host }}
-        username: ${{ input.ssh_username }}
-        key: ${{ input.ssh_key }}
-        port: ${{ input.ssh_port }}
+        username: ${{ inputs.ssh_username }}
+        key: ${{ inputs.ssh_key }}
+        port: ${{ inputs.ssh_port }}
         shell: bash
         script: |
           docker exec
