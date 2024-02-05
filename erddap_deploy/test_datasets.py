@@ -18,19 +18,24 @@ def dataset(request):
     logger.info(f"Finished testing {request.param.dataset_id}")
 
 
+cdm_data_types = (
+    "Grid",
+    "Point",
+    "Trajectory",
+    "Profile",
+    "TimeSeries",
+    "TimeSeriesProfile",
+    "Other",
+)
+
+
 class TestDatasetGlobalAttributes:
     def test_dataset_cdm_data_type(self, dataset):
         """Test that cdm_data_type is valid"""
-        assert dataset.attrs["cdm_data_type"] in (
-            "Grid",
-            "Point",
-            "Trajectory",
-            "Profile",
-            "TimeSeries",
-            "Timeseries",  # TODO should we accept that?
-            "TimeSeriesProfile",
-            "Other",
-        ), f"Dataset {dataset.dataset_id} has invalid cdm_data_type {dataset.attrs['cdm_data_type']}"
+        assert dataset.attrs["cdm_data_type"] in [
+            item.lower() for item in cdm_data_types
+        ], f"Dataset {dataset.dataset_id} has invalid cdm_data_type {dataset.attrs['cdm_data_type']}"
+        # TODO should cdm_data_type be case insensitive?
 
     def test_dataset_subset_variables(self, dataset):
         """Test that subsetVariables are valid variables in the dataset"""
