@@ -156,7 +156,7 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
             logger.debug("Diff: {}", datasetDiff)
             (hard_flag_dir / datasetID).write_text("")
 
-    logger.info("Erddap datasets.xml has been updated")
+    logger.info("datasets.xml updated")
 
 
 def _link_repo(repo, branch, pull, local):

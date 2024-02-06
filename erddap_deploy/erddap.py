@@ -81,7 +81,7 @@ class Erddap:
         self.datasets_xml_dir = datasets_xml_dir
         self.recursive = recursive
         self.encoding = encoding
-        self.secrets = self._get_secrets(secrets)
+        self.secrets = {**self._get_env_secrets(),**(secrets or {})}
         self.datasets_xml = None
         self.tree = None
         self.datasets = {}
@@ -89,7 +89,7 @@ class Erddap:
             self.load()
 
     @staticmethod
-    def _get_secrets(input_secrets: dict = None):
+    def _get_env_secrets():
         """Get secrets from environment variables and merge them with the provided secrets. 
         Ignore ERDDAP_SECRET_ prefix."""
         secrets = {
@@ -98,10 +98,9 @@ class Erddap:
             if key.startswith("ERDDAP_SECRET_")
         }
         if not secrets:
-            return secrets
+            return {}
 
         logger.debug("Found Environment Variables Secrets: {}", list(secrets.keys()))
-        secrets.update(input_secrets or {})
         return secrets
 
     def _load_datasets_xml(self):
@@ -136,7 +135,7 @@ class Erddap:
         for key, value in self.secrets.items():
             if key in self.datasets_xml:
                 logger.debug("Replacing secret {}", key)
-                self.datasets_xml = self.datasets_xml.replace(f"{{{key}}}", value)
+                self.datasets_xml = self.datasets_xml.replace(key, value)
             else:
                 logger.warning("Secret {} not found in datasets.xml", key)
 
