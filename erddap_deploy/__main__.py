@@ -40,7 +40,6 @@ from erddap_deploy.erddap import Erddap
     default="/erddapData",
     show_default=True,
 )
-@click.option("--log-level", default="INFO", help="Logging level", type=str)
 @click.pass_context
 @logger.catch
 def main(
@@ -49,14 +48,8 @@ def main(
     recursive,
     active_datasets_xml,
     big_parent_directory,
-    log_level,
 ):
-    # Set log level
-    logger.remove()
-    logger.add(
-        sys.stderr,
-        level=log_level,
-    )
+    logger.debug("Run in debug mode")
     logger.info("Load datasets.xml={} recursive={}", datasets_xml, recursive)
 
     erddap = Erddap(datasets_xml, recursive=recursive)
