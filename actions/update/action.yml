@@ -37,7 +37,7 @@ inputs:
     description: "The local path within the container where the present
       repository is cloned."
     required: false
-    default: "/datasets-xml-repo"
+    default: "/datasets-repo"
   hard_flag:
     description: "Generate hard flags on datasets changes."
     required: false
