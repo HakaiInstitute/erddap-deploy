@@ -50,6 +50,7 @@ def main(
     big_parent_directory,
 ):
     logger.debug("Run in debug mode")
+    logger.debug("ERDDAP ENV VARS: {}", [var for var in os.environ.keys() if "ERDDAP" in var])
     logger.info("Load datasets.xml={} recursive={}", datasets_xml, recursive)
 
     erddap = Erddap(datasets_xml, recursive=recursive)
