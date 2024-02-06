@@ -1,6 +1,4 @@
 import os
-import sys
-from glob import glob
 from pathlib import Path
 
 import click
@@ -17,6 +15,7 @@ from erddap_deploy.erddap import Erddap
     type=str,
     help="Glob expression path to datasets.xml (or multiple dataset xmls) use to generate ERDDAP datasets.xml. If not provided, ERDDAP will use the datasets.xml in the ERDDAP content directory.",
     default="**/datasets.d/*.xml|**/datasets.xml",
+    envvar="ERDDAP_DATASETS_XML",
 )
 @click.option(
     "--recursive",
@@ -26,12 +25,15 @@ from erddap_deploy.erddap import Erddap
     default=True,
     show_default=True,
     help="Search for reference-datasets-xmls recursively",
+    envvar="ERDDAP_RECURSIVE",
 )
 @click.option(
     "--active-datasets-xml",
     type=str,
     help="Path to active datasets.xml used by ERDDAP",
     default="/usr/local/tomcat/content/erddap/datasets.xml",
+    show_default=True,
+    envvar="ERDDAP_ACTIVE_DATASETS_XML",
 )
 @click.option(
     "--big-parent-directory",
@@ -39,6 +41,7 @@ from erddap_deploy.erddap import Erddap
     type=str,
     default="/erddapData",
     show_default=True,
+    envvar="bigParentDirectory",
 )
 @click.pass_context
 @logger.catch
@@ -86,9 +89,9 @@ def save(ctx, output):
 
 
 @main.command()
-@click.option("-r", "--repo", help="Path to git repo", type=str, default=None)
-@click.option("-b", "--branch", help="Branch to sync from", type=str, default=None)
-@click.option("--pull", help="Pull from remote", type=bool, default=False, is_flag=True)
+@click.option("-r", "--repo", help="Path to git repo", type=str, default=None, envvar="ERDDAP_DATASETS_REPO")
+@click.option("-b", "--branch", help="Branch to sync from", type=str, default=None, envvar="ERDDAP_DATASETS_REPO_BRANCH")
+@click.option("--pull", help="Pull from remote", type=bool, default=False, is_flag=True, envvar="ERDDAP_DATASETS_REPO_PULL")
 @click.option(
     "-p",
     "--local-repo-path",
@@ -104,12 +107,15 @@ def save(ctx, output):
     type=bool,
     default=False,
     is_flag=True,
+    envvar="ERDDAP_HARD_FLAG",
 )
 @click.option(
     "--hard-flag-dir",
     help="Directory to save hard flag",
     type=str,
     default="{bigParentDirectory}/erddap/hardFlag",
+    envvar="ERDDAP_HARD_FLAG_DIR",
+    show_default=True,
 )
 @click.pass_context
 @logger.catch
@@ -172,13 +178,14 @@ def _link_repo(repo, branch, pull, local):
 
 
 @main.command()
-@click.option("-k", "--test-filter", help="Run tests by keyword expressions", type=str)
+@click.option("-k", "--test-filter", help="Run tests by keyword expressions", type=str, default=None, envvar="ERDDAP_TEST_FILTER")
 @click.option(
     "--active",
     help="Run tests on active datasets.xml, otherwise default to reference",
     type=bool,
     default=False,
     is_flag=True,
+    envvar="ERDDAP_TEST_ACTIVE",
 )
 @click.pass_context
 def test(ctx, test_filter, active):
