@@ -75,7 +75,7 @@ runs:
           erddap_deploy \
           --datasets-xml "${{ inputs.datasets_xml }}" \
           ${{ inputs.recursive && '--recursive'  || ''}} \
-          --active-dataset-xml ${{ inputs.active_dataset_xml }} \
+          --active-datasets-xml ${{ inputs.active_dataset_xml }} \
           --big-parent-directory ${{ inputs.bigParentDirectory }} \
           sync \
           --repo ${{ inputs.repo }} \
