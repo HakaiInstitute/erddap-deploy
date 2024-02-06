@@ -90,12 +90,15 @@ class Erddap:
 
     @staticmethod
     def _get_secrets(input_secrets: dict = None):
-        """Get secrets from environment variables and merge them with the provided secrets"""
+        """Get secrets from environment variables and merge them with the provided secrets. 
+        Ignore ERDDAP_SECRET_ prefix."""
         secrets = {
-            key: value
+            key.replace("ERDDAP_SECRET_", ""): value
             for key, value in os.environ.items()
             if key.startswith("ERDDAP_SECRET_")
         }
+
+        logger.debug("Found secrets: {}", secrets.keys())
         secrets.update(input_secrets or {})
         return secrets
 
