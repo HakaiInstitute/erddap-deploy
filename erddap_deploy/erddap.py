@@ -112,6 +112,7 @@ class Erddap:
             )
             return
         logger.info("Found datasets.xml with search path {}", search_path[0])
+        logger.info("Found xmls: {}", glob(search_path[0]))
 
         xml_files = [files for files in glob(search_path[0], recursive=self.recursive)]
         logger.info("Found {} datasets.xml files", len(xml_files))
