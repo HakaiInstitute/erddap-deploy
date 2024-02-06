@@ -97,8 +97,10 @@ class Erddap:
             for key, value in os.environ.items()
             if key.startswith("ERDDAP_SECRET_")
         }
+        if not secrets:
+            return secrets
 
-        logger.debug("Found secrets: {}", secrets.keys())
+        logger.debug("Found Environment Variables Secrets: {}", list(secrets.keys()))
         secrets.update(input_secrets or {})
         return secrets
 
@@ -132,7 +134,11 @@ class Erddap:
     def _replace_secrets(self):
         """Replace secrets in the datasets_xml"""
         for key, value in self.secrets.items():
-            self.datasets_xml = self.datasets_xml.replace(f"{{{key}}}", value)
+            if key in self.datasets_xml:
+                logger.debug("Replacing secret {}", key)
+                self.datasets_xml = self.datasets_xml.replace(f"{{{key}}}", value)
+            else:
+                logger.warning("Secret {} not found in datasets.xml", key)
 
     def _parse_datasets(self):
         """Parse datasets.xml and return the tree"""
