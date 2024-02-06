@@ -32,7 +32,7 @@ cdm_data_types = (
 class TestDatasetGlobalAttributes:
     def test_dataset_cdm_data_type(self, dataset):
         """Test that cdm_data_type is valid"""
-        assert dataset.attrs["cdm_data_type"] in [
+        assert dataset.attrs["cdm_data_type"].lower() in [
             item.lower() for item in cdm_data_types
         ], f"Dataset {dataset.dataset_id} has invalid cdm_data_type {dataset.attrs['cdm_data_type']}"
         # TODO should cdm_data_type be case insensitive?
