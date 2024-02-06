@@ -28,7 +28,7 @@ class TestErddapDeployTest:
 class TestErddapDeploySync:
     def test_sync(self, tmp_path):
         active_datasets_xml = tmp_path / "datasets.xml"
-        local_repo_path = tmp_path / "erddap-datasets"
+        local_repo_path = tmp_path / "datasets-repo"
         result = run_cli(
             "--datasets-xml",
             local_repo_path / "**/datasets.d/*.xml",
@@ -50,7 +50,7 @@ class TestErddapDeploySync:
 
     def test_sync_hard_flag(self, tmp_path):
         active_datasets_xml = tmp_path / "datasets.xml"
-        local_repo_path = tmp_path / "erddap-datasets"
+        local_repo_path = tmp_path / "datasets-repo"
         hard_flag_dir = tmp_path / "hardFlag"
         hard_flag_dir.mkdir()
 

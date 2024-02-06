@@ -94,7 +94,7 @@ def save(ctx, output):
     "--local-repo-path",
     help="Where were to clone the repo",
     type=str,
-    default="erddap-datasets",
+    default="datasets-repo",
     envvar="ERDDAP_DATASETS_REPO_DIR",
 )
 @click.option(
