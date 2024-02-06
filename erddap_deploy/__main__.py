@@ -16,7 +16,7 @@ from erddap_deploy.erddap import Erddap
     "--datasets-xml",
     type=str,
     help="Glob expression path to datasets.xml (or multiple dataset xmls) use to generate ERDDAP datasets.xml. If not provided, ERDDAP will use the datasets.xml in the ERDDAP content directory.",
-    default="**/datasets.xml|**/datasets.d/*.xml",
+    default="**/datasets.d/*.xml|**/datasets.xml",
 )
 @click.option(
     "--recursive",
