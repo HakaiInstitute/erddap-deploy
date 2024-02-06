@@ -42,6 +42,7 @@ from erddap_deploy.erddap import Erddap
 )
 @click.option("--log-level", default="INFO", help="Logging level", type=str)
 @click.pass_context
+@logger.catch
 def main(
     ctx,
     datasets_xml,
@@ -82,6 +83,7 @@ def main(
 @main.command()
 @click.option("-o", "--output", help="Output file", type=str, default="{datasets_xml}")
 @click.pass_context
+@logger.catch
 def save(ctx, output):
     """Save reference datasets.xml to active datasets.xml and include secrets."""
     logger.info("Convert to xml")
@@ -116,6 +118,7 @@ def save(ctx, output):
     default="{bigParentDirectory}/erddap/hardFlag",
 )
 @click.pass_context
+@logger.catch
 def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
     """Sync datasets.xml from a git repo"""
 
@@ -131,6 +134,9 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
     erddap = ctx.obj["erddap"]
     erddap.load()
     active_erddap = ctx.obj["active_erddap"]
+
+    if not erddap.datasets_xml:
+        raise ImportError("Unable to sync since no datasets.xml found")
 
     if not active_erddap:
         logger.info("Save active datasets.xml")
@@ -155,8 +161,8 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
 
 def _link_repo(repo, branch, pull, local):
     """Get repo if not available and checkout branch and pull"""
-    if not repo:
-        return
+    if not repo and not Path(local).exists():
+        raise ValueError("Repo or local path is required")
     if not Path(local).exists() or not list(Path(local).glob("**/*")):
         logger.info(f"Clone repo {repo} to {local}")
         repo = Repo.clone_from(repo, local)

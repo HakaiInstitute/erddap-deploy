@@ -146,6 +146,7 @@ class Erddap:
             for item in self.tree.findall("dataset")
         }
 
+    @logger.catch
     def load(self):
         """Load datasets.xml file(s), add secrets and parse it into a dictionary of Dataset objects"""
         self._load_datasets_xml()
@@ -157,7 +158,8 @@ class Erddap:
         self._get_datasets()
         logger.info("Loaded {} datasets", len(self.datasets.keys()))
         return self
-
+    
+    @logger.catch
     def diff(self, other):
         """Compare two Erddap objects and return a list of datasets that are different"""
         other_erddap = other if isinstance(other, Erddap) else Erddap(other)
@@ -177,7 +179,8 @@ class Erddap:
                     str(other_erddap.datasets.get(datasetID)),
                 )
         return differences
-
+    
+    @logger.catch
     def save(
         self, output: Union[str, Path], source: str = "original", encoding: str = None
     ):
@@ -188,7 +191,9 @@ class Erddap:
             source (str): Source of the datasets.xml. Can be "original" or "parsed"
             encoding (str): Encoding of the output file
         """
-        if source == "original":
+        if self.datasets_xml is None:
+            return logger.warning("No datasets.xml to save")
+        elif source == "original":
             if encoding and encoding != self.encoding:
                 raise ValueError(
                     f"Cannot change encoding from {self.encoding} to {encoding} when source is original"
