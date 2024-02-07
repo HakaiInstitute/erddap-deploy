@@ -156,7 +156,7 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
 
     # Format paths with context
     path_vars = get_erddap_env_variables()
-    path_vars.update(ctx.obj.__dict__)
+    path_vars.update(ctx.obj)
     local_repo_path = local_repo_path.format(**path_vars)
     hard_flag_dir = Path(hard_flag_dir.format(**path_vars))
 
