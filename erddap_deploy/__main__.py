@@ -247,4 +247,4 @@ def test(ctx, test_filter, active):
 
 
 if __name__ == "__main__":
-    main(auto_var_prefix="ERDDAP")
+    main()

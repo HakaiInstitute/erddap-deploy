@@ -4,6 +4,8 @@
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
   "configurations": [
+    
+
     {
       "name": "Python: Test all",
       "type": "python",
@@ -11,7 +13,7 @@
       "program": "erddap_deploy",
       "console": "integratedTerminal",
       "justMyCode": true,
-      "args": ["tests/data/datasets.d/*.xml"]
+      "args": ["--datasets-xml","tests/data/datasets.d/*.xml","--recursive","test"]
     },
     {
       "name": "Python: no arguments",
