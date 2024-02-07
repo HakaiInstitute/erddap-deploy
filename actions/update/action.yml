@@ -67,7 +67,7 @@ runs:
           docker exec \
           $(docker ps --filter name=${{ inputs.container_name }} -q) \
           erddap_deploy \
-          ${{ inputs.datasets_xml && '--datasets-xml=' || }}${{ inputs.datasets_xml }} \
+          ${{ inputs.datasets_xml && '--datasets-xml=' || '' }}${{ inputs.datasets_xml }} \
           ${{ inputs.recursive && '--recursive' || '' }} \
           ${{ inputs.active_datasets_xml && '--active-datasets-xml=' || '' }}${{ inputs.active_datasets_xml }} \
           ${{ inputs.big_parent_directory && '--big-parent-directory=' || '' }}${{ inputs.bigParentDirectory }} \
