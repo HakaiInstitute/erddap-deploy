@@ -1,6 +1,6 @@
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import click
 import pytest
@@ -54,7 +54,9 @@ def main(
     big_parent_directory,
 ):
     logger.debug("Run in debug mode")
-    logger.debug("ERDDAP ENV VARS: {}", [var for var in os.environ.keys() if "ERDDAP" in var])
+    logger.debug(
+        "ERDDAP ENV VARS: {}", [var for var in os.environ.keys() if "ERDDAP" in var]
+    )
     logger.info("Load datasets.xml={} recursive={}", datasets_xml, recursive)
 
     erddap = Erddap(datasets_xml, recursive=recursive)
@@ -90,9 +92,30 @@ def save(ctx, output):
 
 
 @main.command()
-@click.option("-r", "--repo", help="Path to git repo", type=str, default=None, envvar="ERDDAP_DATASETS_REPO")
-@click.option("-b", "--branch", help="Branch to sync from", type=str, default=None, envvar="ERDDAP_DATASETS_REPO_BRANCH")
-@click.option("--pull", help="Pull from remote", type=bool, default=False, is_flag=True, envvar="ERDDAP_DATASETS_REPO_PULL")
+@click.option(
+    "-r",
+    "--repo",
+    help="Path to git repo",
+    type=str,
+    default=None,
+    envvar="ERDDAP_DATASETS_REPO",
+)
+@click.option(
+    "-b",
+    "--branch",
+    help="Branch to sync from",
+    type=str,
+    default=None,
+    envvar="ERDDAP_DATASETS_REPO_BRANCH",
+)
+@click.option(
+    "--pull",
+    help="Pull from remote",
+    type=bool,
+    default=False,
+    is_flag=True,
+    envvar="ERDDAP_DATASETS_REPO_PULL",
+)
 @click.option(
     "-p",
     "--local-repo-path",
@@ -180,7 +203,14 @@ def _link_repo(repo, branch, pull, local):
 
 
 @main.command()
-@click.option("-k", "--test-filter", help="Run tests by keyword expressions", type=str, default=None, envvar="ERDDAP_TEST_FILTER")
+@click.option(
+    "-k",
+    "--test-filter",
+    help="Run tests by keyword expressions",
+    type=str,
+    default=None,
+    envvar="ERDDAP_TEST_FILTER",
+)
 @click.option(
     "--active",
     help="Run tests on active datasets.xml, otherwise default to reference",

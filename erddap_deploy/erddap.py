@@ -81,7 +81,7 @@ class Erddap:
         self.datasets_xml_dir = datasets_xml_dir
         self.recursive = recursive
         self.encoding = encoding
-        self.secrets = {**self._get_env_secrets(),**(secrets or {})}
+        self.secrets = {**self._get_env_secrets(), **(secrets or {})}
         self.datasets_xml = None
         self.tree = None
         self.datasets = {}
@@ -90,7 +90,7 @@ class Erddap:
 
     @staticmethod
     def _get_env_secrets():
-        """Get secrets from environment variables and merge them with the provided secrets. 
+        """Get secrets from environment variables and merge them with the provided secrets.
         Ignore ERDDAP_SECRET_ prefix."""
         secrets = {
             key.replace("ERDDAP_SECRET_", ""): value
@@ -167,7 +167,7 @@ class Erddap:
         self._get_datasets()
         logger.info("Loaded {} datasets", len(self.datasets.keys()))
         return self
-    
+
     @logger.catch
     def diff(self, other):
         """Compare two Erddap objects and return a list of datasets that are different"""
@@ -188,7 +188,7 @@ class Erddap:
                     str(other_erddap.datasets.get(datasetID)),
                 )
         return differences
-    
+
     @logger.catch
     def save(
         self, output: Union[str, Path], source: str = "original", encoding: str = None
