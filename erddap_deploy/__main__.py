@@ -1,6 +1,7 @@
 import os
 import sys
 from pathlib import Path
+import json
 
 import click
 import pytest
@@ -52,6 +53,17 @@ def get_erddap_env_variables():
     show_default=True,
     envvar="ERDDAP_bigParentDirectory",
 )
+@click.option(
+    "--secrets",
+    help=(
+        "JSON string of secrets to replace within `datasets.xml`. "
+        "Secrets can also be defined via environment variables "
+        "with the prefix `ERDDAP_SECRET_*` or "
+        "the `ERDDAP_SECRETS` environment variable."
+    ),
+    type=str,
+    envvar="ERDDAP_SECRETS",
+)
 @click.pass_context
 @logger.catch
 def main(
@@ -60,17 +72,21 @@ def main(
     recursive,
     active_datasets_xml,
     big_parent_directory,
+    secrets,
 ):
     logger.debug("Run in debug mode")
     logger.debug(
         "ERDDAP ENV VARS: {}", [var for var in os.environ.keys() if "ERDDAP" in var]
     )
     logger.info("Load datasets.xml={} recursive={}", datasets_xml, recursive)
+    if secrets:
+        logger.info("Load secrets")
+        secrets = json.loads(secrets)
 
-    erddap = Erddap(datasets_xml, recursive=recursive)
+    erddap = Erddap(datasets_xml, recursive=recursive,secrets=secrets)
     logger.info("Load active datasets.xml")
     active_erddap = (
-        Erddap(active_datasets_xml) if Path(active_datasets_xml).exists() else None
+        Erddap(active_datasets_xml, secrets=secrets) if Path(active_datasets_xml).exists() else None
     )
     if not active_erddap:
         logger.info(f"Active datasets.xml not found in {active_datasets_xml}")
