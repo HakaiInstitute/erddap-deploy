@@ -10,6 +10,14 @@ from loguru import logger
 from erddap_deploy.erddap import Erddap
 
 
+def get_erddap_env_variables():
+    return {
+        key.replace("ERDDAP_", ""): value
+        for key, value in os.environ.items()
+        if key.startswith("ERDDAP_")
+    }
+
+
 @click.group()
 @click.option(
     "--datasets-xml",
@@ -147,8 +155,9 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
     """Sync datasets.xml from a git repo"""
 
     # Format paths with context
-    local_repo_path = local_repo_path.format(**ctx.obj)
-    hard_flag_dir = Path(hard_flag_dir.format(**ctx.obj))
+    erddap_env_variables = get_erddap_env_variables()
+    local_repo_path = local_repo_path.format(**ctx.obj, **erddap_env_variables)
+    hard_flag_dir = Path(hard_flag_dir.format(**ctx.obj), **erddap_env_variables)
 
     # Get repo if not available and checkout branch and pull
     _link_repo(repo, branch, pull, local_repo_path)
@@ -177,7 +186,7 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
 
     if hard_flag:
         for datasetID, datasetDiff in diff.items():
-            logger.info("Generate hard flag for {datatset.dataset_id}")
+            logger.info("Generate hard flag for {}", datasetID)
             logger.debug("Diff: {}", datasetDiff)
             (hard_flag_dir / datasetID).write_text("")
 

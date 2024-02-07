@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from click.testing import CliRunner
 
 from erddap_deploy.__main__ import main
@@ -5,9 +7,13 @@ from erddap_deploy.__main__ import main
 TEST_REPO = "https://github.com/HakaiInstitute/erddap-deploy.git"
 
 
-def run_cli(*args):
+def convert_env(env):
+    return {key.replace("ERDDAP_", ""): value for key, value in env.items()}
+
+
+def run_cli(*args, env=None):
     runner = CliRunner()
-    return runner.invoke(main, args, catch_exceptions=False)
+    return runner.invoke(main, args, env=env, catch_exceptions=False)
 
 
 def test_erddap_deploy_help():
@@ -49,10 +55,13 @@ class TestErddapDeploySync:
         assert result.exit_code == 0
 
     def test_sync_hard_flag(self, tmp_path):
+        env = {"ERDDAP_bigParentDirectory": "erddapData"}
         active_datasets_xml = tmp_path / "datasets.xml"
         local_repo_path = tmp_path / "datasets-repo"
-        hard_flag_dir = tmp_path / "hardFlag"
-        hard_flag_dir.mkdir()
+        hard_flag_dir = tmp_path / "{bigParentDirectory}/hardFlag"
+
+        formated_hard_flag_dir = Path(str(hard_flag_dir).format(**convert_env(env)))
+        formated_hard_flag_dir.mkdir(parents=True)
 
         # iniatialize datasets.xml
         initial_args = (
@@ -92,7 +101,7 @@ class TestErddapDeploySync:
             hard_flag_dir,
         )
         assert result.exit_code == 0
-        assert (hard_flag_dir / "dataset1-modified").exists()
+        assert (formated_hard_flag_dir / "dataset1-modified").exists()
 
 
 class TestErddapDeploySave:
