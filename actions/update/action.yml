@@ -67,13 +67,13 @@ runs:
           docker exec \
           $(docker ps --filter name=${{ inputs.container_name }} -q) \
           erddap_deploy \
-          ${{ inputs.datasets_xml && '--datasets-xml' || '' }} "${{ inputs.datasets_xml }}" \
-          ${{ inputs.recursive && '--recursive' || ''}} \
-          ${{ inputs.active_datasets_xml && '--active-datasets-xml' || '' }} ${{ inputs.active_dataset_xml }} \
-          ${{ inputs.big_parent_directory && '--big-parent-directory' || '' }}  ${{ inputs.bigParentDirectory }} \
+          ${{ inputs.datasets_xml && '--datasets-xml=' || '' }}${{ inputs.datasets_xml }}\
+          ${{ inputs.recursive && '--recursive ' || '' }}\
+          ${{ inputs.active_datasets_xml && '--active-datasets-xml=' || '' }}${{ inputs.active_dataset_xml }} \
+          ${{ inputs.big_parent_directory && '--big-parent-directory=' || '' }}${{ inputs.bigParentDirectory }} \
           sync \
-          ${{ inputs.repo && '--repo' || '' }} ${{ inputs.repo }} \
-          ${{ inputs.branch && '--branch' || '' }} ${{ inputs.branch }} \
-          ${{ inputs.local_repo_path && '--local-repo-path' || '' }} ${{ inputs.local_repo_path }} \
+          ${{ inputs.repo && '--repo=' || '' }}${{ inputs.repo }} \
+          ${{ inputs.branch && '--branch=' || '' }}${{ inputs.branch }} \
+          ${{ inputs.local_repo_path && '--local-repo-path=' || '' }}${{ inputs.local_repo_path }} \
           ${{ inputs.hard_flag && '--hard-flag' || '' }} \
-          ${{ inputs.hard_flag_dir && '--hard-flag-dir' || '' }} ${{ inputs.hard_flag_dir }}
+          ${{ inputs.hard_flag_dir && '--hard-flag-dir=' || '' }}${{ inputs.hard_flag_dir }}
