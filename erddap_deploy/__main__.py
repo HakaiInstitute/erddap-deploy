@@ -50,7 +50,7 @@ def get_erddap_env_variables():
     type=str,
     default="/erddapData",
     show_default=True,
-    envvar="bigParentDirectory",
+    envvar="ERDDAP_bigParentDirectory",
 )
 @click.pass_context
 @logger.catch
@@ -155,9 +155,10 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
     """Sync datasets.xml from a git repo"""
 
     # Format paths with context
-    erddap_env_variables = get_erddap_env_variables()
-    local_repo_path = local_repo_path.format(**ctx.obj, **erddap_env_variables)
-    hard_flag_dir = Path(hard_flag_dir.format(**ctx.obj), **erddap_env_variables)
+    path_vars = get_erddap_env_variables()
+    path_vars.update(ctx.obj.__dict__)
+    local_repo_path = local_repo_path.format(**path_vars)
+    hard_flag_dir = Path(hard_flag_dir.format(**path_vars))
 
     # Get repo if not available and checkout branch and pull
     _link_repo(repo, branch, pull, local_repo_path)
