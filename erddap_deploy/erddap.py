@@ -135,7 +135,7 @@ class Erddap:
         for key, value in self.secrets.items():
             if key in self.datasets_xml:
                 count = self.datasets_xml.count(key)
-                logger.debug("Replacing secret {} detetected {} times", key, count)
+                logger.debug("Replace {} x {}",count, key)
                 self.datasets_xml = self.datasets_xml.replace(key, value)
             else:
                 logger.warning("Secret {} not found in datasets.xml", key)
