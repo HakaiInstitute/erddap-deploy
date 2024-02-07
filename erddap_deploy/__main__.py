@@ -1,5 +1,6 @@
 import os
 from pathlib import Path
+import sys
 
 import click
 import pytest
@@ -136,7 +137,8 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
     active_erddap = ctx.obj["active_erddap"]
 
     if not erddap.datasets_xml:
-        raise ImportError("Unable to sync since no datasets.xml found")
+        logger.error("Unable to sync since no datasets.xml found")
+        sys.exit(1)
 
     if not active_erddap:
         logger.info("Save active datasets.xml")
