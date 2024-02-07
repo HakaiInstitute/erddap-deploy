@@ -1,17 +1,36 @@
 
-# ERDDAP Checks
+# erddap-deploy
 
-`erddap-checks` run a series of tests on the different ERDDAP components to make sure a deployment will deploy successfully.
+`erddap-deploy` combines different utilities useful when managing ERDDAP instances.
+
+- `erddap_deploy test`: Test `datasets.xml` or separated `datasets.d/*.xml` files of common configuration issues.
+- `erddap_deploy sync`: Synchronize datasets XML from a git repository available within the ERDDAP instance container.
+
+Both methods can be used locally via the CLI command line or GitHub actions.
+
+## Use locally
+
+Install locally the package with:
+
+```console
+pip install git+https://github.com/HakaiInstitute/erddap-deploy.git
+```
+
+For documentation:
+
+```console
+erddap_deploy --help
+```
 
 ## Gitub Action
 
-Add the following step to your GitHub Action.
+### Test datasets.xml
+
+You can add the `erddap_deploy test` action to test an ERDDAP `datasets.xml` on
+changes or PRs within a GitHub repo with the following action:
 
 ```yaml
-      - name: Run erddap-checks
-        uses: hakaiinstitute/erddap-checks@v1
-        with:
-            datasets_xml: "optional path to datasets.xml or datasets.d/*.xml"
+      - uses: hakaiinstitute/erddap-deploy/actions/test@v1
 ```
 
 We also recommend running an XML linter to detect XML-specific issues. SuperLinter is great for this!
@@ -27,22 +46,19 @@ We also recommend running an XML linter to detect XML-specific issues. SuperLint
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
-## Local testing
+## Sync Deployment datasets.xml
 
-Install the package:
+Typically, `datasets.xml` configuration is maintained within a Git repository. You can sync deployed ERDDAP container instances via SSH and the GitHub Action:
 
-```console
-pip install git+https://github.com/HakaiInstitute/erddap-checks.git
+``` yaml
+    - uses:  hakaiinstitute/erddap-deploy/actions/sync@v1
+      with:
+        ssh_host: ${{ secrets.SSH_HOST }}
+        ssh_username: ${{ secrets.SSH_USERNAME }}
+        ssh_key: ${{ secrets.SSH_KEY }}
+        ssh_port: ${{ secrets.SSH_PORT }}
+        container_name: ${{ vars.ERDDAP_CONTAINER }}
+        hard_flag: true
 ```
 
-Run checks:
-
-```console
-erddap_checks "path to dataset.xml"
-```
-
-For options:
-
-```console
-erddap_checks --help
-```
+To handle multiple deployments, we recommend using `GitHub Environments` which maintains environment-specific secrets.
