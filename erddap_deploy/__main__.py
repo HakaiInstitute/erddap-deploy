@@ -7,9 +7,13 @@ import click
 import pytest
 from git import Repo
 from loguru import logger
+from dotenv import load_dotenv
 
 from erddap_deploy.erddap import Erddap
+from erddap_deploy.monitor import uptime_kuma_monitor
 
+# load .env file if available
+load_dotenv(".env")
 
 def get_erddap_env_variables():
     return {
@@ -181,8 +185,8 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
 
     # compare active dataset vs HEAD
     logger.info("Compare active dataset vs HEAD")
+    ctx.obj["erddap"].load()
     erddap = ctx.obj["erddap"]
-    erddap.load()
     active_erddap = ctx.obj["active_erddap"]
 
     if not erddap.datasets_xml:
@@ -261,6 +265,105 @@ def test(ctx, test_filter, active):
     if result:
         raise SystemExit(result)
 
+
+@main.command()
+@click.option(
+    "--uptime-kuma-url",
+    help="The URL of the uptime kuma instance",
+    envvar="UPTIME_KUMA_URL",
+)
+@click.option(
+    "--username",
+    help="The username of the uptime kuma instance",
+    envvar="UPTIME_KUMA_USERNAME",
+)
+@click.option(
+    "--password",
+    help="The password of the uptime kuma instance",
+    envvar="UPTIME_KUMA_PASSWORD",
+)
+@click.option(
+    "--token",
+    help="The token of the uptime kuma instance",
+    envvar="UPTIME_KUMA_TOKEN",
+)
+@click.option(
+    "--erddap-name",
+    default=None,
+    help="The name of the erddap instance used within human readable names (ex: some.url.com/erddap)",
+    envvar="ERDDAP_NAME",
+)
+@click.option(
+    "--erddap-url",
+    type=str,
+    default=None,
+    help="The name of the erddap instance used within human readable names (ex: some.url.com/erddap)",
+)
+@click.option(
+    "--status-page-slug",
+    default=None,
+    type=str,
+    help="The slug of the status page",
+    envvar="UPTIME_KUMA_STATUS_PAGE_SLUG",
+)
+@click.option(
+    "--status-page",
+    default=None,
+    type=click.Path(exists=True),
+    help="JSON file grouping the different items related to the uptime-kuma save_status_page.\n\n see  https://shorturl.at/FHKOP for more information.",
+    envvar="UPTIME_KUMA_STATUS_PAGE",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Do not make any changes to uptime kuma",
+    envvar="DRY_RUN",
+)
+@click.pass_context
+@logger.catch
+def monitor(
+    ctx,
+    uptime_kuma_url: str,
+    username: str,
+    password: str,
+    token: str = None,
+    erddap_name: str = None,
+    erddap_url: str = None,
+    status_page_slug: str = None,
+    status_page: Path = None,
+    dry_run: bool = False,
+):
+    """Monitor ERDDAP deployment via uptime kuma status page.
+    
+    Required fields: uptime-kuma-url, username,password and token
+    """
+
+    if all([uptime_kuma_url, username, password, token]) is None:
+        return
+    elif uptime_kuma_url is None or username is None or password is None or token is None:
+        logger.info("No uptime kuma credentials provided")
+        return
+    
+    if erddap_url is None:
+        if os.environ.get("ERDDAP_baseHttpsUrl"):
+            erddap_url = os.environ.get("ERDDAP_baseHttpsUrl") + "/erddap"
+        elif os.environ.get("ERDDAP_baseUrl"):
+            erddap_url = os.environ.get("ERDDAP_baseUrl") + "/erddap"
+        else:
+            raise ValueError("ERDDAP_baseUrl or ERDDAP_baseHttpsUrl is required")
+
+    uptime_kuma_monitor(
+        uptime_kuma_url,
+        username,
+        password,
+        token=token,
+        erddap_name=erddap_name,
+        erddap_url=erddap_url,
+        status_page_slug=status_page_slug,
+        status_page=status_page,
+        datasets=list(ctx.obj["erddap"].datasets.values()),
+        dry_run=dry_run,
+    )
 
 if __name__ == "__main__":
     main()
