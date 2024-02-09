@@ -3,23 +3,8 @@ import re
 from pathlib import Path
 from typing import Union
 import json
-from dotenv import load_dotenv
 from loguru import logger
 from uptime_kuma_api import UptimeKumaApi
-
-load_dotenv()
-
-DEFAULT_DATASET_PAGE_MONITOR = {}
-DEFAULT_DATASET_DATA_MONITOR = {}
-DEFAULT_REALTIME_DATASET_MONITOR = {}
-REALTIME_TAG = {
-    "id": 3,
-    "monitor_id": 13,
-    "tag_id": 2,
-    "value": "",
-    "name": "realtime-dataset",
-    "color": "#2563EB",
-}
 
 
 def get_erddap_protocol(dataset):
@@ -78,7 +63,7 @@ class ErddapMonitor:
         else:
             return {}
 
-    def make_erddap_pages_monitor(self):
+    def make_erddap_pages_monitor(self, interval=60):
         pages = ["index.html", "tabledap/index.html", "griddap/index.html"]
         return [
             dict(
@@ -88,12 +73,12 @@ class ErddapMonitor:
                 active="true",
                 url=f"{self.erddap_url}/{page}",
                 type="http",
-                interval=60,
+                interval=interval,
             )
             for page in pages
         ]
 
-    def make_dataset_page_monitor(self, dataset: dict):
+    def make_dataset_page_monitor(self, dataset: dict, interval=60):
         name = f"{get_erddap_protocol(dataset)}/{dataset.dataset_id}.html"
         return dict(
             name=name,
@@ -102,10 +87,10 @@ class ErddapMonitor:
             active=dataset.active,
             url=f"{self.erddap_url}/{name}",
             type="http",
-            interval=60,
+            interval=interval,
         )
 
-    def make_dataset_data_monitor(self, dataset: dict, n_recs=10):
+    def make_dataset_data_monitor(self, dataset: dict, n_recs=10, interval=3600):
         name = f"{get_erddap_protocol(dataset)}/{dataset.dataset_id}.htmlTable?&orderByLimit(\"{n_recs}\")"
         return dict(
             name=name,
@@ -114,10 +99,10 @@ class ErddapMonitor:
             active=dataset.active,
             url=f"{self.erddap_url}/{name}",
             type="http",
-            interval=3600,
+            interval=interval,
         )
 
-    def make_realtime_dataset_monitor(self, dataset: dict, dt="1day"):
+    def make_realtime_dataset_monitor(self, dataset: dict, dt="1day", interval=3600):
         name = f"{get_erddap_protocol(dataset)}/{dataset.dataset_id}.htmlTable?&time>now-{dt}"
         return dict(
             name=name,
@@ -126,7 +111,7 @@ class ErddapMonitor:
             active=dataset.active,
             url=f"{self.erddap_url}/{name}",
             type="http",
-            interval=3600,
+            interval=interval,
         )
 
     def get_monitors(self):
@@ -219,8 +204,6 @@ class ErddapMonitor:
                     logger.info(f"Pausing monitor {monitor}")
                     self.api.resume_monitor(monitor["id"])
 
-    def get_deleted_monitors(self):
-        pass
 
     def get_status_page(self):
         for status_page in self.api.get_status_pages():
@@ -340,4 +323,4 @@ def uptime_kuma_monitor(
         if deleted_monitors:
             logger.warning("The following monitors were deleted: {}", deleted_monitors)
 
-        logger.info("Completed")
+        logger.info("Uptime Kuma Monitoring Update Completed")
