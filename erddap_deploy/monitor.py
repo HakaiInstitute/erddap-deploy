@@ -21,7 +21,7 @@ def dry_run(func):
         if self.dry_run:
             logger.info(f"DRY-RUN: Would {func.__name__}(name={kwargs.get('name')}, ...)")
         else:
-                return func(*args, **kwargs)
+                return func(self,*args, **kwargs)
     return wrapper
 
 
