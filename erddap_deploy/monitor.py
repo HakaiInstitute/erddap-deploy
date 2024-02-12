@@ -154,7 +154,7 @@ class ErddapMonitor:
     def add_parent(self):
         
         logger.info(f"Adding parent {self.erddap_name}")
-        response = self.add_monitor(
+        response = self.api.add_monitor(
             name=self.erddap_name,
             type="group",
         )
