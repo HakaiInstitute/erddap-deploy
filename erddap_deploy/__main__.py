@@ -229,7 +229,7 @@ def _link_repo(repo, branch, pull, local):
         repo.git.checkout(branch)
     if pull:
         logger.info(f"Pull from remote")
-        repo.git.origin.pull()
+        repo.git.pull()
 
 
 @main.command()
