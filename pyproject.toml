@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "erddap-deploy"
-version = "1.1.0"
+version = "1.2.0"
 description = "Run a series of tests on the different ERDDAP components which helps resolving the different issues related to an ERDDAP deployment"
 authors = ["Jessy Barrette <30420025+JessyBarrette@users.noreply.github.com>"]
 readme = "README.md"
