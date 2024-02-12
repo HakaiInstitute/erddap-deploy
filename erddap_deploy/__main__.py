@@ -358,18 +358,23 @@ def monitor(
             sys.exit(1)
     else:
         logger.info("Using erddap_url={}", erddap_url)
-    uptime_kuma_monitor(
-        uptime_kuma_url,
-        username,
-        password,
-        token=token,
-        erddap_name=erddap_name,
-        erddap_url=erddap_url,
-        status_page_slug=status_page_slug,
-        status_page=status_page,
-        datasets=list(ctx.obj["erddap"].datasets.values()),
-        dry_run=dry_run,
-    )
+    
+    try:
+        uptime_kuma_monitor(
+            uptime_kuma_url,
+            username,
+            password,
+            token=token,
+            erddap_name=erddap_name,
+            erddap_url=erddap_url,
+            status_page_slug=status_page_slug,
+            status_page=status_page,
+            datasets=list(ctx.obj["erddap"].datasets.values()),
+            dry_run=dry_run,
+        )
+    except:
+        logger.exception("Failed to monitor ERDDAP deployment", exc_info=True)
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
