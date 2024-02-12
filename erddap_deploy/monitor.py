@@ -159,7 +159,7 @@ class ErddapMonitor:
             type="group",
         )
         logger.info("{} monitorID={}", response["msg"], response["monitorID"])
-        if response["msg"] != "Added Successfully":
+        if   "Added Successfully" not in response["msg"]:
             raise Exception(f"Failed to add parent: {response['msg']}")
         self.parent = self.api.get_monitor(response["monitorID"])
 
