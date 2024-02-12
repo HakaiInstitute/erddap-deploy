@@ -339,10 +339,12 @@ def monitor(
     """
 
     if all([uptime_kuma_url, username, password, token]) is None:
-        return
+        logger.warning("No uptime kuma credentials provided")
+        sys.exit(1)
     elif uptime_kuma_url is None or username is None or password is None or token is None:
-        logger.info("No uptime kuma credentials provided")
-        return
+        missing = [parm for parm in [uptime_kuma_url, username, password,token] if parm is None]
+        logger.warning("Missing uptime kuma parameters: {}", missing)
+        sys.exit(1)
     logger.info("Monitor ERDDAP deployment wit uptime-kuma={}", uptime_kuma_url)
     if erddap_url is None:
         if os.environ.get("ERDDAP_baseHttpsUrl"):
@@ -352,7 +354,8 @@ def monitor(
             erddap_url = os.environ.get("ERDDAP_baseUrl") + "/erddap"
             logger.info("Using erddap_url=ERDDAP_baseUrl={}", erddap_url)
         else:
-            raise ValueError("ERDDAP_baseUrl or ERDDAP_baseHttpsUrl is required")
+            logger.error("ERDDAP_baseUrl or ERDDAP_baseHttpsUrl is required")
+            sys.exit(1)
     else:
         logger.info("Using erddap_url={}", erddap_url)
     uptime_kuma_monitor(
