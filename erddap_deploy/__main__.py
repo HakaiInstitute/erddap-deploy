@@ -318,6 +318,7 @@ def test(ctx, test_filter, active):
     is_flag=True,
     help="Do not make any changes to uptime kuma",
     envvar="DRY_RUN",
+    default=False,
 )
 @click.pass_context
 @logger.catch
@@ -358,7 +359,8 @@ def monitor(
             sys.exit(1)
     else:
         logger.info("Using erddap_url={}", erddap_url)
-    
+    if dry_run:
+        logger.warning("Dry run mode enabled")      
     try:
         uptime_kuma_monitor(
             uptime_kuma_url,
