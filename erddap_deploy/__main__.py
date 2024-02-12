@@ -379,4 +379,8 @@ def monitor(
         sys.exit(1)
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+    except Exception as e:
+        logger.exception("Failed to execute command", exc_info=True)
+        sys.exit(1)
