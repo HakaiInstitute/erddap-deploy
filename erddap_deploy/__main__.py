@@ -224,7 +224,7 @@ def sync(ctx, repo, branch, github_token, pull, local_repo_path, hard_flag, hard
 def update_local_repository(repo_url, branch, github_token, pull, local):
     """Get repo if not available and checkout branch and pull"""
     
-    if github_token and "https://" in repo_url
+    if github_token and "https://" in repo_url:
         logger.info("Add github token to repo origin url")
         repo_url = repo_url.replace("https://", f"https://{github_token}@")
     elif github_token and "git@" in repo_url:
