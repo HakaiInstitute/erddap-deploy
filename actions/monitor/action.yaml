@@ -1,0 +1,86 @@
+# test-datasets-xml.yaml
+---
+name: "erddap-sync-datasets-xml"
+description: "Update Uptime-Kuma monitoring of a an ERDDAP server via the datasets.xml files within this repository and github secrets."
+inputs:
+  datasets_xml:
+    description: "Path to the datasets.xml file to be checked.
+      It could be a glob expression."
+    required: false
+  recursive:
+    description: "If true, subdirectories will be searched for datasets.xml
+      files."
+    required: false
+  active_dataset_xml:
+    description: "Path to the active datasets.xml file."
+    required: false
+  bigParentDirectory:
+    description: "The big parent directory to sync the datasets.xml file to."
+    required: false
+  container_name:
+    description: "The container to sync the datasets.xml file to."
+    required: true
+  uptime_kuma_url:
+    description: "URL to upttime_kuma_url. Default to server UPTIME_KUMA_URL
+      environment variable."
+    required: false
+  uptime_kuma_username:
+    description: "Uptime Kuma username. Default to server UPTIME_KUMA_USERNAME
+      environment variable available within server."
+    required: false
+  uptime_kuma_password:
+    description: "Uptime Kuma password. Default to server UPTIME_KUMA_PASSWORD
+      environment variable available within server."
+  uptime_kuma_token:
+    description: "Uptime Kuma token. Default to server UPTIME_KUMA_TOKEN
+      environment variable available within server."
+  erddap_url:
+    description: "The ERDDAP server URL to monitor. Default to server ERDDAP_URL
+      environment variable available within server."
+  erddap_name:
+    description: "The ERDDAP server name use to define this deployment on uptime
+      kuma. default to ERDDAP_URL environment variable available within server."
+    required: false
+  dry_run:
+    description: "If true, the action will not perform any changes."
+    required: false
+    default: true
+  ssh_host:
+    description: "The ssh host to connecto the erddap server."
+    required: true
+  ssh_username:
+    description: "The ssh user to connecto the erddap server."
+    required: true
+  ssh_key:
+    description: "The ssh key to connecto the erddap server."
+    required: true
+  ssh_port:
+    description: "The ssh port to connecto the erddap server."
+    required: false
+    default: 22
+runs:
+  using: "composite"
+  steps:
+    - name: Install Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.11"
+    - name: Install Dependencies
+      run: pip install git+https://github.com/HakaiInstitute/erddap-deploy.git
+      shell: bash
+    - name: Run checks
+      shell: bash
+      run: |
+        erddap_deploy \
+        ${{ inputs.datasets_xml && '--datasets-xml=' || '' }}${{ inputs.datasets_xml }} \
+        ${{ inputs.recursive && '--recursive' || '' }} \
+        ${{ inputs.active_datasets_xml && '--active-datasets-xml=' || '' }}${{ inputs.active_datasets_xml }} \
+        ${{ inputs.big_parent_directory && '--big-parent-directory=' || '' }}${{ inputs.bigParentDirectory }} \
+        monitor \
+        ${{ inputs.uptime_kuma_url && '--uptime-kuma-url=' || '' }}${{ inputs.uptime_kuma_url }} \
+        ${{ inputs.uptime_kuma_username && '--username=' || '' }}${{ inputs.uptime_kuma_username }} \
+        ${{ inputs.uptime_kuma_password && '--password=' || '' }}${{ inputs.uptime_kuma_password }} \
+        ${{ inputs.uptime_kuma_token && '--token=' || '' }}${{ inputs.uptime_kuma_token }} \
+        ${{ inputs.erddap_url && '--erddap-url=' || '' }}${{ inputs.erddap_url }} \
+        ${{ inputs.erddap_name && '--erddap-name=' || '' }}${{ inputs.erddap_name }} \
+        ${{ inputs.dry_run && '--dry-run' || '' }};

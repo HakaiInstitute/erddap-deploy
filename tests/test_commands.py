@@ -47,6 +47,7 @@ class TestErddapDeploySync:
             "main",
             "--local-repo-path",
             local_repo_path,
+            "--pull"
         )
         assert result.exit_code == 0
 
