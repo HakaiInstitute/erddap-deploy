@@ -137,6 +137,13 @@ def save(ctx, output):
     envvar="ERDDAP_DATASETS_REPO_BRANCH",
 )
 @click.option(
+    "--github-token",
+    help="Github token to access private repos",
+    type=str,
+    default=None,
+    envvar="GITHUB_TOKEN",
+)
+@click.option(
     "--pull",
     help="Pull from remote",
     type=bool,
@@ -171,7 +178,7 @@ def save(ctx, output):
 )
 @click.pass_context
 @logger.catch
-def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
+def sync(ctx, repo, branch, github_token, pull, local_repo_path, hard_flag, hard_flag_dir):
     """Sync datasets.xml from a git repo"""
 
     # Format paths with context
@@ -181,7 +188,7 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
     hard_flag_dir = Path(hard_flag_dir.format(**path_vars))
 
     # Get repo if not available and checkout branch and pull
-    _link_repo(repo, branch, pull, local_repo_path)
+    update_local_repository(repo, branch, github_token, pull, local_repo_path)
 
     # compare active dataset vs HEAD
     logger.info("Compare active dataset vs HEAD")
@@ -214,15 +221,29 @@ def sync(ctx, repo, branch, pull, local_repo_path, hard_flag, hard_flag_dir):
     logger.info("datasets.xml updated")
 
 
-def _link_repo(repo, branch, pull, local):
+def update_local_repository(repo_url, branch, github_token, pull, local):
     """Get repo if not available and checkout branch and pull"""
-    if not repo and not Path(local).exists():
+    
+    if github_token and "https://" in repo_url
+        logger.info("Add github token to repo origin url")
+        repo_url = repo_url.replace("https://", f"https://{github_token}@")
+    elif github_token and "git@" in repo_url:
+        logger.info("Add github token to repo origin url, replace git@ with https://")
+        repo_url = repo_url.replace("git@", f"https://{github_token}@")
+    elif github_token:
+        logger.warning("Github token provided but repo url is not https or git@")
+
+    if not repo_url and not Path(local).exists():
         raise ValueError("Repo or local path is required")
     if not Path(local).exists() or not list(Path(local).glob("**/*")):
         logger.info(f"Clone repo {repo} to {local}")
-        repo = Repo.clone_from(repo, local)
+        repo = Repo.clone_from(repo_url, local)
     else:
         repo = Repo(local)
+    
+    if github_token:
+        logger.info("Add github token to repo origin url")
+        repo.git.remote("set-url", "origin", repo_url)
 
     if branch:
         logger.info(f"Checkout branch {branch}")

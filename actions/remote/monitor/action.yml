@@ -59,14 +59,11 @@ runs:
   steps:
     - name: Update ERDDAP dataset.xml
       uses: appleboy/ssh-action@v0.1.10
-      env:
-        GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       with:
         host: ${{ inputs.ssh_host }}
         username: ${{ inputs.ssh_username }}
         key: ${{ inputs.ssh_key }}
         port: ${{ inputs.ssh_port }}
-        envs: GH_TOKEN
         script: |
           docker exec \
           $(docker ps --filter name=${{ inputs.container_name }} -q) \
