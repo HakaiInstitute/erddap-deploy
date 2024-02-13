@@ -24,15 +24,14 @@ inputs:
   repo:
     description: "The repository to sync the datasets.xml file to."
     required: false
-    default: "${{secrets.GITHUB_TOKEN}}${{ github.repositoryURL }}"
+    default: "${{ github.repositoryURL }}"
   branch:
     description: "The branch to sync the datasets.xml file to."
     required: false
     default: "${{ github.ref_name }}"
-  github-token:
+  github_token:
     description: "The repository token to sync the datasets.xml file to."
     required: false
-    default: "${{ secrets.GITHUB_TOKEN }}"
   pull:
     description: "If true, the action will pull the repository before syncing."
     required: false
