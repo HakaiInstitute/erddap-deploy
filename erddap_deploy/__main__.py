@@ -232,7 +232,7 @@ def update_local_repository(repo_url, branch, github_token, pull, local):
     if github_token:
         if "https://" in repo_url or "git@" in repo_url:    
             logger.info("Github token provided")
-            repo_url = f"https://{github_token}@{repo_url.split('@')[-1]}"
+            repo_url = f"https://{github_token}@{repo_url.split('//')[-1].split('@')[-1]}"
         else:
             logger.warning("Github token provided but repo url is not https or git@")
 
