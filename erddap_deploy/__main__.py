@@ -177,7 +177,7 @@ def save(ctx, output):
     show_default=True,
 )
 @click.pass_context
-@logger.catch
+@logger.catch(reraise=True)
 def sync(ctx, repo, branch, github_token, pull, local_repo_path, hard_flag, hard_flag_dir):
     """Sync datasets.xml from a git repo"""
 
@@ -273,6 +273,7 @@ def update_local_repository(repo_url, branch, github_token, pull, local):
     envvar="ERDDAP_TEST_ACTIVE",
 )
 @click.pass_context
+@logger.catch(reraise=True)
 def test(ctx, test_filter, active):
     """Run a series of tests on repo ERDDAP datasets"""
 
@@ -344,7 +345,7 @@ def test(ctx, test_filter, active):
     default=False,
 )
 @click.pass_context
-@logger.catch
+@logger.catch(reraise=True)
 def monitor(
     ctx,
     uptime_kuma_url: str,
