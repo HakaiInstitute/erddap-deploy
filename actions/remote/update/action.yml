@@ -32,6 +32,9 @@ inputs:
   token:
     description: "The token to use to authenticate with the repository."
     required: false
+  token_username:
+    description: "The username to use to authenticate with the repository."
+    required: false
   pull:
     description: "If true, the action will pull the repository before syncing."
     required: false
@@ -82,6 +85,7 @@ runs:
           ${{ inputs.repo && '--repo=' || '' }}${{ inputs.repo }} \
           ${{ inputs.branch && '--branch=' || '' }}${{ inputs.branch }} \
           ${{ inputs.token && '--github-token=' || '' }}${{ inputs.token }} \
+          ${{ inputs.token_username && '--github-token-username=' || '' }}${{ inputs.token_username }} \
           ${{ inputs.pull && '--pull' || '' }} \
           ${{ inputs.local_repo_path && '--local-repo-path=' || '' }}${{ inputs.local_repo_path }} \
           ${{ inputs.hard_flag && '--hard-flag' || '' }} \
