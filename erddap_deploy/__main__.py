@@ -15,6 +15,7 @@ from erddap_deploy.monitor import uptime_kuma_monitor
 # load .env file if available
 load_dotenv(".env")
 
+
 def get_erddap_env_variables():
     return {
         key.replace("ERDDAP_", ""): value
@@ -87,10 +88,12 @@ def main(
         logger.info("Load secrets")
         secrets = json.loads(secrets)
 
-    erddap = Erddap(datasets_xml, recursive=recursive,secrets=secrets)
+    erddap = Erddap(datasets_xml, recursive=recursive, secrets=secrets)
     logger.info("Load active datasets.xml")
     active_erddap = (
-        Erddap(active_datasets_xml, secrets=secrets) if Path(active_datasets_xml).exists() else None
+        Erddap(active_datasets_xml, secrets=secrets)
+        if Path(active_datasets_xml).exists()
+        else None
     )
     if not active_erddap:
         logger.info(f"Active datasets.xml not found in {active_datasets_xml}")
@@ -178,7 +181,9 @@ def save(ctx, output):
 )
 @click.pass_context
 @logger.catch(reraise=True)
-def sync(ctx, repo, branch, github_token, pull, local_repo_path, hard_flag, hard_flag_dir):
+def sync(
+    ctx, repo, branch, github_token, pull, local_repo_path, hard_flag, hard_flag_dir
+):
     """Sync datasets.xml from a git repo"""
 
     # Format paths with context
@@ -223,7 +228,7 @@ def sync(ctx, repo, branch, github_token, pull, local_repo_path, hard_flag, hard
 
 def update_local_repository(repo_url, branch, github_token, pull, local):
     """Get repo if not available and checkout branch and pull"""
-    
+
     # Clone or load repo
     if not repo_url and not Path(local).exists():
         raise ValueError("Repo or local path is required")
@@ -232,16 +237,16 @@ def update_local_repository(repo_url, branch, github_token, pull, local):
         repo = Repo.clone_from(repo_url, local)
     else:
         repo = Repo(local)
-    
+
     # Update origin url with github token
     if github_token:
         if "https://" in repo_url:
             repo_url = repo_url.replace("https://", f"https://{github_token}@")
         elif "git@" in repo_url:
-            repo_url = repo_url.replace("git@", f"https://{github_token}@"))
+            repo_url = repo_url.replace("git@", f"https://{github_token}@")
         else:
             logger.warning("Github token provided but repo url is not https or git@")
-        
+
         logger.info("Update repo.git.origin url={}", repo_url)
         repo.git.remote("set-url", "origin", repo_url)
 
@@ -249,7 +254,7 @@ def update_local_repository(repo_url, branch, github_token, pull, local):
     if branch:
         logger.info(f"Checkout branch {branch}")
         repo.git.checkout(branch)
-    
+
     # Pull from remote
     if pull:
         logger.info(f"Pull from remote")
@@ -360,15 +365,21 @@ def monitor(
     dry_run: bool = False,
 ):
     """Monitor ERDDAP deployment via uptime kuma status page.
-    
+
     Required fields: uptime-kuma-url, username,password and token
     """
 
     if all([uptime_kuma_url, username, password, token]) is None:
         logger.warning("No uptime kuma credentials provided")
         sys.exit(1)
-    elif uptime_kuma_url is None or username is None or password is None or token is None:
-        missing = [parm for parm in [uptime_kuma_url, username, password,token] if parm is None]
+    elif (
+        uptime_kuma_url is None or username is None or password is None or token is None
+    ):
+        missing = [
+            parm
+            for parm in [uptime_kuma_url, username, password, token]
+            if parm is None
+        ]
         logger.warning("Missing uptime kuma parameters: {}", missing)
         sys.exit(1)
     logger.info("Monitor ERDDAP deployment with uptime-kuma={}", uptime_kuma_url)
@@ -385,7 +396,7 @@ def monitor(
     else:
         logger.info("Using erddap_url={}", erddap_url)
     if dry_run:
-        logger.warning("Dry run mode enabled")      
+        logger.warning("Dry run mode enabled")
     try:
         uptime_kuma_monitor(
             uptime_kuma_url,
@@ -402,6 +413,7 @@ def monitor(
     except:
         logger.exception("Failed to monitor ERDDAP deployment", exc_info=True)
         sys.exit(1)
+
 
 if __name__ == "__main__":
     try:

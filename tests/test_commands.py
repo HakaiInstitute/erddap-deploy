@@ -47,7 +47,7 @@ class TestErddapDeploySync:
             "main",
             "--local-repo-path",
             local_repo_path,
-            "--pull"
+            "--pull",
         )
         assert result.exit_code == 0
 
@@ -117,10 +117,10 @@ class TestErddapDeploySave:
     def test_save_secrets(self, tmp_path):
         output_dataset_xml = tmp_path / "datasets.xml"
         result = run_cli(
-            "--secrets={\"TEST_SECRET\": \"TEST_VALUE\"}",
+            '--secrets={"TEST_SECRET": "TEST_VALUE"}',
             "save",
             "--output",
-            output_dataset_xml
+            output_dataset_xml,
         )
         assert result.exit_code == 0
         output_dataset_xml_content = output_dataset_xml.read_text()
@@ -129,13 +129,13 @@ class TestErddapDeploySave:
         assert "TEST_VALUE" in output_dataset_xml_content
         assert "TEST_SECRET" not in output_dataset_xml_content
 
-    def test_save_env_secrets(self,tmp_path):
+    def test_save_env_secrets(self, tmp_path):
         output_dataset_xml = tmp_path / "datasets.xml"
         result = run_cli(
             "save",
             "--output",
             output_dataset_xml,
-            env={"ERDDAP_SECRET_TEST_SECRET": "TEST_VALUE"}
+            env={"ERDDAP_SECRET_TEST_SECRET": "TEST_VALUE"},
         )
         assert result.exit_code == 0
         output_dataset_xml_content = output_dataset_xml.read_text()
@@ -144,14 +144,14 @@ class TestErddapDeploySave:
         assert "TEST_VALUE" in output_dataset_xml_content
         assert "TEST_SECRET" not in output_dataset_xml_content
         assert "ERDDAP_SECRET_TEST_SECRET" not in output_dataset_xml_content
-    
-    def test_save_with_erddap_secret_env_variable(self,tmp_path):
+
+    def test_save_with_erddap_secret_env_variable(self, tmp_path):
         output_dataset_xml = tmp_path / "datasets.xml"
         result = run_cli(
             "save",
             "--output",
             output_dataset_xml,
-            env={"ERDDAP_SECRETS": "{\"TEST_SECRET\": \"TEST_VALUE\"}"}
+            env={"ERDDAP_SECRETS": '{"TEST_SECRET": "TEST_VALUE"}'},
         )
         assert result.exit_code == 0
         output_dataset_xml_content = output_dataset_xml.read_text()
@@ -161,14 +161,14 @@ class TestErddapDeploySave:
         assert "TEST_SECRET" not in output_dataset_xml_content
         assert "ERDDAP_SECRETS" not in output_dataset_xml_content
 
-    def test_save_secrets_input_prevail_env_variables(self,tmp_path):
+    def test_save_secrets_input_prevail_env_variables(self, tmp_path):
         output_dataset_xml = tmp_path / "datasets.xml"
         result = run_cli(
-            "--secrets={\"TEST_SECRET\": \"TEST_VALUE\"}",
+            '--secrets={"TEST_SECRET": "TEST_VALUE"}',
             "save",
             "--output",
             output_dataset_xml,
-            env={"ERDDAP_SECRET_TEST_SECRET": "TEST_VALUE_ENV"}
+            env={"ERDDAP_SECRET_TEST_SECRET": "TEST_VALUE_ENV"},
         )
         assert result.exit_code == 0
         output_dataset_xml_content = output_dataset_xml.read_text()

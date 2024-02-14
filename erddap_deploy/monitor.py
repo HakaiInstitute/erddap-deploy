@@ -1,4 +1,3 @@
-
 import re
 from pathlib import Path
 from typing import Union
@@ -17,11 +16,14 @@ def get_erddap_protocol(dataset):
 
 
 def dry_run(func):
-    def wrapper(self,*args, **kwargs):
+    def wrapper(self, *args, **kwargs):
         if self.dry_run:
-            logger.info(f"DRY-RUN: Would {func.__name__}(name={kwargs.get('name')}, ...)")
+            logger.info(
+                f"DRY-RUN: Would {func.__name__}(name={kwargs.get('name')}, ...)"
+            )
         else:
-                return func(self,*args, **kwargs)
+            return func(self, *args, **kwargs)
+
     return wrapper
 
 
@@ -100,7 +102,7 @@ class ErddapMonitor:
         )
 
     def make_dataset_data_monitor(self, dataset: dict, n_recs=10, interval=3600):
-        name = f"{get_erddap_protocol(dataset)}/{dataset.dataset_id}.htmlTable?&orderByLimit(\"{n_recs}\")"
+        name = f'{get_erddap_protocol(dataset)}/{dataset.dataset_id}.htmlTable?&orderByLimit("{n_recs}")'
         return dict(
             name=name,
             description=f"ERDDAP Dataset Data Monitor for {dataset.dataset_id}. Attemp to retrieve {n_recs} records",
@@ -135,31 +137,30 @@ class ErddapMonitor:
         for parent in self.api.get_monitors():
             if parent["pathName"] == self.erddap_name:
                 return parent
-            
-    @dry_run
-    def add_monitor(self,*args,**kwargs):
-        logger.info("Add monitor {}",kwargs.get('name'))
-        return self.api.add_monitor(*args,**kwargs)
-    
-    @dry_run
-    def pause_monitor(self,*args, **kwargs):
-        logger.info("Pause monitor {}",kwargs.get('name'))
-        return self.api.pause_monitor(kwargs['id'])
 
     @dry_run
-    def resume_monitor(self,*args, **kwargs):
-        logger.info("Resume monitor {}",kwargs.get('name'))
-        return self.api.resume_monitor(kwargs['id'])
-    
+    def add_monitor(self, *args, **kwargs):
+        logger.info("Add monitor {}", kwargs.get("name"))
+        return self.api.add_monitor(*args, **kwargs)
+
+    @dry_run
+    def pause_monitor(self, *args, **kwargs):
+        logger.info("Pause monitor {}", kwargs.get("name"))
+        return self.api.pause_monitor(kwargs["id"])
+
+    @dry_run
+    def resume_monitor(self, *args, **kwargs):
+        logger.info("Resume monitor {}", kwargs.get("name"))
+        return self.api.resume_monitor(kwargs["id"])
+
     def add_parent(self):
-        
         logger.info(f"Adding parent {self.erddap_name}")
         response = self.api.add_monitor(
             name=self.erddap_name,
             type="group",
         )
         logger.info("{} monitorID={}", response["msg"], response["monitorID"])
-        if   "Added Successfully" not in response["msg"]:
+        if "Added Successfully" not in response["msg"]:
             raise Exception(f"Failed to add parent: {response['msg']}")
         self.parent = self.api.get_monitor(response["monitorID"])
 
@@ -171,7 +172,7 @@ class ErddapMonitor:
             monitors.append(self.make_dataset_page_monitor(dataset))
             if any(
                 term in dataset.dataset_id.lower()
-                for term in ("realtime", "Real-Time","5min")
+                for term in ("realtime", "Real-Time", "5min")
             ):
                 monitors.append(self.make_realtime_dataset_monitor(dataset))
         return monitors
@@ -186,7 +187,6 @@ class ErddapMonitor:
 
     def add_monitors(self, monitors: list):
         for monitor in monitors:
-
             response = self.add_monitor(
                 parent=self.parent["id"],
                 **{
@@ -200,16 +200,23 @@ class ErddapMonitor:
 
     def pause_monitors(self, expected_monitors: dict):
         for monitor in self.get_monitors():
-            expected_monitor = [item for item in expected_monitors if item["pathName"] == monitor["pathName"]][0]
-            if monitor["active"] and not expected_monitor['active']:
+            expected_monitor = [
+                item
+                for item in expected_monitors
+                if item["pathName"] == monitor["pathName"]
+            ][0]
+            if monitor["active"] and not expected_monitor["active"]:
                 self.pause_monitor(**monitor)
 
     def resume_monitors(self, expected_monitors: dict):
         for monitor in self.get_monitors():
-            expected_monitor = [item for item in expected_monitors if item["pathName"] == monitor["pathName"]][0]
-            if not monitor["active"] and expected_monitor['active']:
+            expected_monitor = [
+                item
+                for item in expected_monitors
+                if item["pathName"] == monitor["pathName"]
+            ][0]
+            if not monitor["active"] and expected_monitor["active"]:
                 self.resume_monitor(**monitor)
-
 
     def get_status_page(self):
         for status_page in self.api.get_status_pages():
@@ -242,7 +249,10 @@ class ErddapMonitor:
                     "monitorList": [
                         {"id": monitor["id"]}
                         for monitor in self.get_monitors()
-                        if ("index.html" not in monitor["pathName"] and "now-" not in monitor["pathName"])
+                        if (
+                            "index.html" not in monitor["pathName"]
+                            and "now-" not in monitor["pathName"]
+                        )
                     ],
                 },
                 {
@@ -260,9 +270,10 @@ class ErddapMonitor:
             kwargs.pop("slug", None)
             status_page.update(kwargs)
         return self.api.save_status_page(slug=self.status_page_slug, **status_page)
-    
+
     def get_deleted_monitors(self):
         pass
+
 
 def uptime_kuma_monitor(
     uptime_kuma_url: str,
