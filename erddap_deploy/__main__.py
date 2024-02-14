@@ -227,9 +227,10 @@ def update_local_repository(repo_url, branch, github_token, pull, local):
     if github_token and "https://" in repo_url:
         logger.info("Add github token to repo origin url")
         repo_url = repo_url.replace("https://", f"https://{github_token}@")
+        logger.info("Add github token repo.git.remote url={}", repo_url)
     elif github_token and "git@" in repo_url:
-        logger.info("Add github token to repo origin url, replace git@ with https://")
         repo_url = repo_url.replace("git@", f"https://{github_token}@")
+        logger.info("Add github token repo.git.remote url={}", repo_url)
     elif github_token:
         logger.warning("Github token provided but repo url is not https or git@")
 
@@ -242,6 +243,7 @@ def update_local_repository(repo_url, branch, github_token, pull, local):
         repo = Repo(local)
     
     if github_token:
+        
         logger.info("Add github token to repo origin url")
         repo.git.remote("set-url", "origin", repo_url)
 
