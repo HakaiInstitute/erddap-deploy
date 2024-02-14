@@ -69,7 +69,7 @@ def get_erddap_env_variables():
     envvar="ERDDAP_SECRETS",
 )
 @click.pass_context
-@logger.catch
+@logger.catch(reraise=True)
 def main(
     ctx,
     datasets_xml,
