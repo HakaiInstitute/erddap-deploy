@@ -229,24 +229,24 @@ def sync(
 def update_local_repository(repo_url, branch, github_token, pull, local):
     """Get repo if not available and checkout branch and pull"""
 
+    if github_token:
+        if "https://" in repo_url or "git@" in repo_url:    
+            logger.info("Github token provided")
+            repo_url = f"https://{github_token}@{repo_url.split('@')[-1]}"
+        else:
+            logger.warning("Github token provided but repo url is not https or git@")
+
     # Clone or load repo
     if not repo_url and not Path(local).exists():
         raise ValueError("Repo or local path is required")
     if not Path(local).exists() or not list(Path(local).glob("**/*")):
-        logger.info(f"Clone repo {repo} to {local}")
+        logger.info(f"Clone repo {repo_url} to {local}")
         repo = Repo.clone_from(repo_url, local)
     else:
         repo = Repo(local)
 
-    # Update origin url with github token
-    if github_token:
-        if "https://" in repo_url:
-            repo_url = repo_url.replace("https://", f"https://{github_token}@")
-        elif "git@" in repo_url:
-            repo_url = repo_url.replace("git@", f"https://{github_token}@")
-        else:
-            logger.warning("Github token provided but repo url is not https or git@")
-
+    # Update origin url
+    if repo.git.remote("get-url", "origin") != repo_url:
         logger.info("Update repo.git.origin url={}", repo_url)
         repo.git.remote("set-url", "origin", repo_url)
 
