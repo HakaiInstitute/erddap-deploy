@@ -29,6 +29,9 @@ inputs:
     description: "The branch to sync the datasets.xml file to."
     required: false
     default: "${{ github.ref_name }}"
+  token:
+    description: "The token to use to authenticate with the repository."
+    required: false
   pull:
     description: "If true, the action will pull the repository before syncing."
     required: false
@@ -78,6 +81,7 @@ runs:
           sync \
           ${{ inputs.repo && '--repo=' || '' }}${{ inputs.repo }} \
           ${{ inputs.branch && '--branch=' || '' }}${{ inputs.branch }} \
+          ${{ inputs.token && '--githuub-token=' || '' }}${{ inputs.token }} \
           ${{ inputs.pull && '--pull' || '' }} \
           ${{ inputs.local_repo_path && '--local-repo-path=' || '' }}${{ inputs.local_repo_path }} \
           ${{ inputs.hard_flag && '--hard-flag' || '' }} \
