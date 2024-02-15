@@ -84,7 +84,7 @@ def main(
         "ERDDAP ENV VARS: {}",
         {
             var: (value[:5] + "***" if len(var) > 5 else "***")
-            if "token" in var or "secret" in var
+            if [sub in var for sub in ["secret","token","password"]]
             else var
             for var, value in os.environ.items()
             if "ERDDAP" in var
