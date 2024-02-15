@@ -279,7 +279,7 @@ def update_local_repository(
         repo = Repo(local)
         origin_url = repo.git.remote("get-url", "origin")
         if repo_url and origin_url != repo_url:
-            raise ValueError(
+            logger.warning(
                 f"Local [{local}] repo.remote.origin.get-url = {origin_url}  is not the same repo={repo_url}"
             )
     
