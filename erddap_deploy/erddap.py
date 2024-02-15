@@ -111,9 +111,9 @@ class Erddap:
             if glob(search, recursive=self.recursive)
         ]
         if not search_path:
-            logger.warning(
+            logger.debug(
                 "No datasets.xml found with search path {} recursive={}",
-                self.datasets_xml_dir.split('|'),
+                self.datasets_xml_dir.split("|"),
                 self.recursive,
             )
             return
@@ -162,7 +162,11 @@ class Erddap:
         """Load datasets.xml file(s), add secrets and parse it into a dictionary of Dataset objects"""
         self._load_datasets_xml()
         if self.datasets_xml is None:
-            logger.warning("No datasets.xml found")
+            logger.warning(
+                "No datasets.xml file(s) found for: {}, recursive={}",
+                self.datasets_xml_dir,
+                self.recursive,
+            )
             return
         self._replace_secrets()
         self._parse_datasets()

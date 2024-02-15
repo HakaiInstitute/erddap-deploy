@@ -1,7 +1,8 @@
+import json
 import re
 from pathlib import Path
 from typing import Union
-import json
+
 from loguru import logger
 from uptime_kuma_api import UptimeKumaApi
 

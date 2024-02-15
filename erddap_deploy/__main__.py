@@ -1,13 +1,13 @@
+import json
 import os
 import sys
 from pathlib import Path
-import json
 
 import click
 import pytest
+from dotenv import load_dotenv
 from git import Repo
 from loguru import logger
-from dotenv import load_dotenv
 
 from erddap_deploy.erddap import Erddap
 from erddap_deploy.monitor import uptime_kuma_monitor
@@ -82,7 +82,13 @@ def main(
     logger.debug("Run in debug mode")
     logger.debug(
         "ERDDAP ENV VARS: {}",
-        {var: value for var, value in os.environ.items() if "ERDDAP" in var},
+        {
+            var: (value[:5] + "***" if len(var) > 5 else "***")
+            if "token" in var or "secret" in var
+            else var
+            for var, value in os.environ.items()
+            if "ERDDAP" in var
+        },
     )
     logger.info("Load datasets.xml={} recursive={}", datasets_xml, recursive)
     if secrets:
@@ -90,9 +96,9 @@ def main(
         secrets = json.loads(secrets)
 
     # test datasets_xml string
-    if "\"" in datasets_xml:
+    if '"' in datasets_xml:
         logger.warning("datasets_xml contains quotes, make sure it's properly escaped")
-        
+
     erddap = Erddap(datasets_xml, recursive=recursive, secrets=secrets)
     logger.info("Load active datasets.xml")
     active_erddap = (
