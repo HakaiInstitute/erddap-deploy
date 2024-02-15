@@ -81,7 +81,8 @@ def main(
 ):
     logger.debug("Run in debug mode")
     logger.debug(
-        "ERDDAP ENV VARS: {}", {var:value for var, value in os.environ.items() if "ERDDAP" in var}
+        "ERDDAP ENV VARS: {}",
+        {var: value for var, value in os.environ.items() if "ERDDAP" in var},
     )
     logger.info("Load datasets.xml={} recursive={}", datasets_xml, recursive)
     if secrets:
@@ -189,7 +190,15 @@ def save(ctx, output):
 @click.pass_context
 @logger.catch(reraise=True)
 def sync(
-    ctx, repo, branch, github_token,github_token_username, pull, local_repo_path, hard_flag, hard_flag_dir
+    ctx,
+    repo,
+    branch,
+    github_token,
+    github_token_username,
+    pull,
+    local_repo_path,
+    hard_flag,
+    hard_flag_dir,
 ):
     """Sync datasets.xml from a git repo"""
 
@@ -200,7 +209,9 @@ def sync(
     hard_flag_dir = Path(hard_flag_dir.format(**path_vars))
 
     # Get repo if not available and checkout branch and pull
-    update_local_repository(repo, branch, github_token,github_token_username, pull, local_repo_path)
+    update_local_repository(
+        repo, branch, github_token, github_token_username, pull, local_repo_path
+    )
 
     # compare active dataset vs HEAD
     logger.info("Compare active dataset vs HEAD")
@@ -233,13 +244,17 @@ def sync(
     logger.info("datasets.xml updated")
 
 
-def update_local_repository(repo_url, branch, github_token,github_token_username, pull, local):
+def update_local_repository(
+    repo_url, branch, github_token, github_token_username, pull, local
+):
     """Get repo if not available and checkout branch and pull"""
 
-    logger.debug("List local repository files: {} ls  = {}", local,Path(local).glob('*'))
+    logger.debug(
+        "List local repository files: {} ls  = {}", local, list(Path(local).glob("*"))
+    )
 
     if github_token:
-        if "https://" in repo_url or "git@" in repo_url:    
+        if "https://" in repo_url or "git@" in repo_url:
             logger.info("Github token provided")
             repo_url = f"https://{github_token_username}:{github_token}@{repo_url.split('//')[-1].split('@')[-1]}"
         else:

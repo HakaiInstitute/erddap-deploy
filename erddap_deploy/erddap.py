@@ -112,7 +112,9 @@ class Erddap:
         ]
         if not search_path:
             logger.warning(
-                "No datasets.xml found with search path {} recursive={}", self.datasets_xml_dir, self.recursive
+                "No datasets.xml found with search path {} recursive={}",
+                self.datasets_xml_dir,
+                self.recursive,
             )
             return
         logger.info("Found datasets.xml with search path {}", search_path[0])
