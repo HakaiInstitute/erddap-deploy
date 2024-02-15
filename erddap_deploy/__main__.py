@@ -236,6 +236,8 @@ def sync(
 def update_local_repository(repo_url, branch, github_token,github_token_username, pull, local):
     """Get repo if not available and checkout branch and pull"""
 
+    logger.debug("List local repository files: {} ls  = {}", local,Path(local).glob('*'))
+
     if github_token:
         if "https://" in repo_url or "git@" in repo_url:    
             logger.info("Github token provided")
