@@ -265,13 +265,6 @@ def update_local_repository(
         "List local repository files: {} ls  = {}", local, list(Path(local).glob("*"))
     )
 
-    if github_token:
-        if "https://" in repo_url or "git@" in repo_url:
-            logger.info("Github token provided")
-            repo_url = f"https://{github_token_username}:{github_token}@{repo_url.split('//')[-1].split('@')[-1]}"
-        else:
-            logger.warning("Github token provided but repo url is not https or git@")
-
     # Clone or load repo
     if not repo_url and not Path(local).exists():
         raise ValueError("Repo or local path is required")
@@ -280,11 +273,14 @@ def update_local_repository(
         repo = Repo.clone_from(repo_url, local)
     else:
         repo = Repo(local)
-
-    # Update origin url
-    if repo.git.remote("get-url", "origin") != repo_url and repo_url:
-        logger.info("Update repo.git.origin url={}", repo_url)
-        repo.git.remote("set-url", "origin", repo_url)
+        if repo.git.remote("get-url", "origin") != repo_url:
+            raise ValueError(
+                f"Local repo {local} is not the same as the remote repo {repo_url}"
+            )
+    
+    if github_token and github_token_username:
+        repo.config_writer().set_value("user", "name", github_token_username).release()
+        repo.config_writer().set_value("user", "password", github_token).release()
 
     # Checkout branch and pull
     if branch:
