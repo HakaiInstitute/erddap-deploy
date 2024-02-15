@@ -264,6 +264,10 @@ def update_local_repository(
     logger.debug(
         "List local repository files: {} ls  = {}", local, list(Path(local).glob("*"))
     )
+    if repo_url[-1] == "/":
+        logger.debug("Remove trailing / from repo_url")
+        repo_url = repo_url[:-1]
+
 
     # Clone or load repo
     if not repo_url and not Path(local).exists():
