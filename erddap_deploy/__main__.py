@@ -273,9 +273,10 @@ def update_local_repository(
         repo = Repo.clone_from(repo_url, local)
     else:
         repo = Repo(local)
-        if repo_url and repo.git.remote("get-url", "origin") != repo_url:
+        origin_url = repo.git.remote("get-url", "origin")
+        if repo_url and origin_url != repo_url:
             raise ValueError(
-                f"Local repo {local}  origin = {repo.git.remote("get-url", "origin")} is not the same as the remote repo {repo_url}"
+                f"Local [{local}] repo.remote.origin.get-url = {origin_url}  is not the same repo={repo_url}"
             )
     
     if github_token and github_token_username:
