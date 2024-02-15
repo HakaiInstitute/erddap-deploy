@@ -89,6 +89,10 @@ def main(
         logger.info("Load secrets")
         secrets = json.loads(secrets)
 
+    # test datasets_xml string
+    if "\"" in datasets_xml:
+        logger.warning("datasets_xml contains quotes, make sure it's properly escaped")
+        
     erddap = Erddap(datasets_xml, recursive=recursive, secrets=secrets)
     logger.info("Load active datasets.xml")
     active_erddap = (
