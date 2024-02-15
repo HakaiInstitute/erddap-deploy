@@ -81,7 +81,7 @@ def main(
 ):
     logger.debug("Run in debug mode")
     logger.debug(
-        "ERDDAP ENV VARS: {}", [var for var in os.environ.keys() if "ERDDAP" in var]
+        "ERDDAP ENV VARS: {}", {var:value for var, value in os.environ.items() if "ERDDAP" in var}
     )
     logger.info("Load datasets.xml={} recursive={}", datasets_xml, recursive)
     if secrets:
