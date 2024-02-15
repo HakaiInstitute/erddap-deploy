@@ -279,6 +279,7 @@ def update_local_repository(
             )
     
     if github_token and github_token_username:
+        logger.info("Set github token")
         repo.config_writer().set_value("user", "name", github_token_username).release()
         repo.config_writer().set_value("user", "password", github_token).release()
 
