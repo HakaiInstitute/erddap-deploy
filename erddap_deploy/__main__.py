@@ -253,7 +253,7 @@ def update_local_repository(repo_url, branch, github_token,github_token_username
         repo = Repo(local)
 
     # Update origin url
-    if repo.git.remote("get-url", "origin") != repo_url:
+    if repo.git.remote("get-url", "origin") != repo_url and repo_url:
         logger.info("Update repo.git.origin url={}", repo_url)
         repo.git.remote("set-url", "origin", repo_url)
 
