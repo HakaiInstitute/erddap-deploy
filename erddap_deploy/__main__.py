@@ -287,6 +287,10 @@ def update_local_repository(
         logger.info("Set github token")
         repo.config_writer().set_value("user", "name", github_token_username).release()
         repo.config_writer().set_value("user", "password", github_token).release()
+    elif not github_token and not github_token_username:
+        pass
+    elif github_token is None or github_token_username is None:
+        raise ValueError(f"Github token={github_token} and username={github_token_username} are required")
 
     # Checkout branch and pull
     if branch:
