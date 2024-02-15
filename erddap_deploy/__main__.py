@@ -264,7 +264,7 @@ def update_local_repository(
     logger.debug(
         "List local repository files: {} ls  = {}", local, list(Path(local).glob("*"))
     )
-    if repo_url[-1] == "/":
+    if repo_url and repo_url[-1] == "/":
         logger.debug("Remove trailing / from repo_url")
         repo_url = repo_url[:-1]
 
