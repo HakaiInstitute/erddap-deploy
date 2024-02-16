@@ -12,6 +12,6 @@ jobs:
             fetch-depth: 0
       - name: run erddap_deploy test action
         id: erddap_deploy
-        uses: ./actions/test
+        uses: ./test
         with:
           datasets_xml: tests/data/datasets.d/*.xml
