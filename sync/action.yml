@@ -83,6 +83,6 @@ runs:
           ${{ inputs.pull && '--pull' || '' }} \
           ${{ inputs.local_repo_path && '--local-repo-path=' || '' }}${{ inputs.local_repo_path }} \
           ${{ inputs.hard_flag && '--hard-flag' || '' }} \
-          ${{ inputs.hard_flag_dir && '--hard-flag-dir=' || '' }}${{ inputs.hard_flag_dir }}
+          ${{ inputs.hard_flag_dir && '--hard-flag-dir=' || '' }}${{ inputs.hard_flag_dir }} \
           ${{ inputs.monitor && 'monitor' || '' }};
 
