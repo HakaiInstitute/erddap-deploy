@@ -1,4 +1,5 @@
 import json
+import os
 import re
 import sys
 from pathlib import Path
@@ -210,8 +211,10 @@ class ErddapMonitor:
                 item
                 for item in expected_monitors
                 if item["pathName"] == monitor["pathName"]
-            ][0]
-            if monitor["active"] and not expected_monitor["active"]:
+            ]
+            if not expected_monitor:
+                continue
+            if monitor["active"] and not expected_monitor[0]["active"]:
                 self.pause_monitor(**monitor)
 
     def resume_monitors(self, expected_monitors: dict):
@@ -220,8 +223,10 @@ class ErddapMonitor:
                 item
                 for item in expected_monitors
                 if item["pathName"] == monitor["pathName"]
-            ][0]
-            if not monitor["active"] and expected_monitor["active"]:
+            ]
+            if not expected_monitor:
+                continue
+            if not monitor["active"] and expected_monitor[0]["active"]:
                 self.resume_monitor(**monitor)
 
     def get_status_page(self):
@@ -437,21 +442,25 @@ def monitor(
         ]
         logger.warning("Missing uptime kuma parameters: {}", missing)
         sys.exit(1)
+
+    if dry_run:
+        logger.warning("Dry run mode enabled")
+
     logger.info("Monitor ERDDAP deployment with uptime-kuma={}", uptime_kuma_url)
     if erddap_url is None:
+        logger.debug("Retrieve erddap_url from environment variables")
         if os.environ.get("ERDDAP_baseHttpsUrl"):
             erddap_url = os.environ.get("ERDDAP_baseHttpsUrl") + "/erddap"
-            logger.info("Using erddap_url=ERDDAP_baseHttpsUrl={}", erddap_url)
+            logger.debug("Using erddap_url=ERDDAP_baseHttpsUrl={}", erddap_url)
         elif os.environ.get("ERDDAP_baseUrl"):
             erddap_url = os.environ.get("ERDDAP_baseUrl") + "/erddap"
-            logger.info("Using erddap_url=ERDDAP_baseUrl={}", erddap_url)
+            logger.debug("Using erddap_url=ERDDAP_baseUrl={}", erddap_url)
         else:
             logger.error("ERDDAP_baseUrl or ERDDAP_baseHttpsUrl is required")
             sys.exit(1)
     else:
-        logger.info("Using erddap_url={}", erddap_url)
-    if dry_run:
-        logger.warning("Dry run mode enabled")
+        logger.debug("Using erddap_url={}", erddap_url)
+
     try:
         uptime_kuma_monitor(
             uptime_kuma_url,
@@ -462,7 +471,7 @@ def monitor(
             erddap_url=erddap_url,
             status_page_slug=status_page_slug,
             status_page=status_page,
-            datasets=list(ctx.obj["erddap"].datasets.values()),
+            datasets=list(ctx.obj["erddap"].load().datasets.values()),
             dry_run=dry_run,
         )
     except:

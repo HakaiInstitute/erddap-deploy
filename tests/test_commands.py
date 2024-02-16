@@ -41,7 +41,7 @@ class TestErddapDeploySync:
             "--active-datasets-xml",
             active_datasets_xml,
             "sync",
-            "--repo",
+            "--repo-url",
             TEST_REPO,
             "--branch",
             "main",
@@ -49,7 +49,7 @@ class TestErddapDeploySync:
             local_repo_path,
             "--pull",
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
     def test_sync_help(self):
         result = run_cli("sync", "--help")
@@ -71,7 +71,7 @@ class TestErddapDeploySync:
             "--active-datasets-xml",
             active_datasets_xml,
             "sync",
-            "--repo",
+            "--repo-url",
             TEST_REPO,
             "--branch",
             "main",
@@ -81,7 +81,7 @@ class TestErddapDeploySync:
         result = run_cli(
             *initial_args,
         )
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
         # Modify datasets.xml
         source_test_xml = local_repo_path / "tests/data/datasets.d/dataset1.xml"

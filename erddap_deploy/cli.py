@@ -16,14 +16,6 @@ from erddap_deploy.test import test
 load_dotenv(".env")
 
 
-def get_erddap_env_variables():
-    return {
-        key.replace("ERDDAP_", ""): value
-        for key, value in os.environ.items()
-        if key.startswith("ERDDAP_")
-    }
-
-
 @click.group(chain=True)
 @click.option(
     "--datasets-xml",
@@ -105,13 +97,10 @@ def cli(
     if '"' in datasets_xml:
         logger.warning("datasets_xml contains quotes, make sure it's properly escaped")
 
-    erddap = Erddap(datasets_xml, recursive=recursive, secrets=secrets)
+    erddap = Erddap(datasets_xml, recursive=recursive, secrets=secrets, lazy_load=True)
     logger.info("Load active datasets.xml")
-    active_erddap = (
-        Erddap(active_datasets_xml, secrets=secrets)
-        if Path(active_datasets_xml).exists()
-        else None
-    )
+    active_erddap = Erddap(active_datasets_xml, secrets=secrets, lazy_load=True)
+    
     if not active_erddap:
         logger.info(f"Active datasets.xml not found in {active_datasets_xml}")
 
@@ -136,6 +125,7 @@ def save(ctx, output):
     """Save reference datasets.xml to active datasets.xml and include secrets."""
     logger.info("Convert to xml")
     output = output.format(**ctx.obj)
+    ctx.obj["erddap"].load()
     return ctx.obj["erddap"].save(output=output)
 
 

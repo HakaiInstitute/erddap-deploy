@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 
@@ -7,6 +8,15 @@ from git import Repo
 from loguru import logger
 
 load_dotenv()
+
+
+def get_erddap_env_variables():
+    """Retrieve ERDDAP environment variables"""
+    return {
+        key.replace("ERDDAP_", ""): value
+        for key, value in os.environ.items()
+        if key.startswith("ERDDAP_")
+    }
 
 
 @click.command()
@@ -85,7 +95,7 @@ def sync(
     logger.info("Compare active dataset vs HEAD")
     ctx.obj["erddap"].load()
     erddap = ctx.obj["erddap"]
-    active_erddap = ctx.obj["active_erddap"]
+    active_erddap = ctx.obj["active_erddap"].load()
 
     if not erddap.datasets_xml:
         logger.error("Unable to sync since no datasets.xml found")
@@ -133,17 +143,17 @@ def update_local_repository(repo_url, branch, pull, local):
         origin_url = repo.git.remote("get-url", "origin")
         if repo_url and origin_url != repo_url:
             logger.warning(
-                f"Local [{local}] repo.remote.origin.get-url = {origin_url}  is not the same repo={repo_url}"
+                "Local [{}] repo.remote.origin.get-url = {}  is not the same repo={}",local, origin_url, repo_url
             )
 
     # Checkout branch and pull
     if branch:
-        logger.info(f"Checkout branch {branch}")
+        logger.info("Checkout branch {}", branch)
         repo.git.checkout(branch)
 
     # Pull from remote
     if pull:
-        logger.info(f"Pull from remote")
+        logger.info("Pull from remote")
         repo.git.pull()
 
 
