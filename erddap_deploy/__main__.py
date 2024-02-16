@@ -283,14 +283,11 @@ def update_local_repository(
                 f"Local [{local}] repo.remote.origin.get-url = {origin_url}  is not the same repo={repo_url}"
             )
     
-    if github_token and github_token_username:
-        logger.info("Set github token")
-        repo.config_writer().set_value("user", "name", github_token_username).release()
+    # Set user 
+    if github_token:
         repo.config_writer().set_value("user", "password", github_token).release()
-    elif not github_token and not github_token_username:
-        pass
-    elif github_token is None or github_token_username is None:
-        raise ValueError(f"Github token={github_token} and username={github_token_username} are required")
+    if github_token_username:
+        repo.config_writer().set_value("user", "name", github_token_username).release()
 
     # Checkout branch and pull
     if branch:
