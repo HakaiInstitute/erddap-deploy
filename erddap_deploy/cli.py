@@ -1,7 +1,6 @@
 import json
 import os
 import sys
-from pathlib import Path
 
 import click
 from dotenv import load_dotenv
@@ -100,7 +99,7 @@ def cli(
     erddap = Erddap(datasets_xml, recursive=recursive, secrets=secrets, lazy_load=True)
     logger.info("Load active datasets.xml")
     active_erddap = Erddap(active_datasets_xml, secrets=secrets, lazy_load=True)
-    
+
     if not active_erddap:
         logger.info(f"Active datasets.xml not found in {active_datasets_xml}")
 
@@ -137,6 +136,6 @@ cli.add_command(monitor)
 if __name__ == "__main__":
     try:
         cli()
-    except Exception as e:
+    except Exception:
         logger.exception("Failed to execute command", exc_info=True)
         sys.exit(1)

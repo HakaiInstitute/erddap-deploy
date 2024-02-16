@@ -10,7 +10,7 @@ def erddap():
 
 def test_erddap_init(erddap):
     assert erddap.datasets_xml_dir == "tests/data/datasets.d/*.xml"
-    assert erddap.recursive == False
+    assert not erddap.recursive
     assert erddap.encoding == "UTF-8"
     assert erddap.secrets == {}
 
