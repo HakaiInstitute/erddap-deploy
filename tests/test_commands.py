@@ -2,7 +2,7 @@ from pathlib import Path
 
 from click.testing import CliRunner
 
-from erddap_deploy.__main__ import main
+from erddap_deploy.cli import cli
 
 TEST_REPO = "https://github.com/HakaiInstitute/erddap-deploy.git"
 
@@ -13,7 +13,7 @@ def convert_env(env):
 
 def run_cli(*args, env=None):
     runner = CliRunner()
-    return runner.invoke(main, args, env=env, catch_exceptions=False)
+    return runner.invoke(cli, args, env=env, catch_exceptions=False)
 
 
 def test_erddap_deploy_help():

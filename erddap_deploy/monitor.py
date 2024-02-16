@@ -1,10 +1,15 @@
 import json
 import re
+import sys
 from pathlib import Path
 from typing import Union
 
+import click
+from dotenv import load_dotenv
 from loguru import logger
 from uptime_kuma_api import UptimeKumaApi
+
+load_dotenv()
 
 
 def get_erddap_protocol(dataset):
@@ -344,3 +349,126 @@ def uptime_kuma_monitor(
             logger.warning("The following monitors were deleted: {}", deleted_monitors)
 
         logger.info("Uptime Kuma Monitoring Update Completed")
+
+
+@click.command()
+@click.option(
+    "--uptime-kuma-url",
+    help="The URL of the uptime kuma instance",
+    envvar="UPTIME_KUMA_URL",
+)
+@click.option(
+    "--username",
+    help="The username of the uptime kuma instance",
+    envvar="UPTIME_KUMA_USERNAME",
+)
+@click.option(
+    "--password",
+    help="The password of the uptime kuma instance",
+    envvar="UPTIME_KUMA_PASSWORD",
+)
+@click.option(
+    "--token",
+    help="The token of the uptime kuma instance",
+    envvar="UPTIME_KUMA_TOKEN",
+)
+@click.option(
+    "--erddap-name",
+    default=None,
+    help="The name of the erddap instance used within human readable names (ex: some.url.com/erddap)",
+    envvar="ERDDAP_NAME",
+)
+@click.option(
+    "--erddap-url",
+    type=str,
+    default=None,
+    help="The name of the erddap instance used within human readable names (ex: some.url.com/erddap)",
+)
+@click.option(
+    "--status-page-slug",
+    default=None,
+    type=str,
+    help="The slug of the status page",
+    envvar="UPTIME_KUMA_STATUS_PAGE_SLUG",
+)
+@click.option(
+    "--status-page",
+    default=None,
+    type=click.Path(exists=True),
+    help="JSON file grouping the different items related to the uptime-kuma save_status_page.\n\n see  https://shorturl.at/FHKOP for more information.",
+    envvar="UPTIME_KUMA_STATUS_PAGE",
+)
+@click.option(
+    "--dry-run",
+    is_flag=True,
+    help="Do not make any changes to uptime kuma",
+    envvar="DRY_RUN",
+    default=False,
+)
+@click.pass_context
+@logger.catch(reraise=True)
+def monitor(
+    ctx,
+    uptime_kuma_url: str,
+    username: str,
+    password: str,
+    token: str = None,
+    erddap_name: str = None,
+    erddap_url: str = None,
+    status_page_slug: str = None,
+    status_page: Path = None,
+    dry_run: bool = False,
+):
+    """Monitor ERDDAP deployment via uptime kuma status page.
+
+    Required fields: uptime-kuma-url, username,password and token
+    """
+
+    if all([uptime_kuma_url, username, password, token]) is None:
+        logger.warning("No uptime kuma credentials provided")
+        sys.exit(1)
+    elif (
+        uptime_kuma_url is None or username is None or password is None or token is None
+    ):
+        missing = [
+            parm
+            for parm in [uptime_kuma_url, username, password, token]
+            if parm is None
+        ]
+        logger.warning("Missing uptime kuma parameters: {}", missing)
+        sys.exit(1)
+    logger.info("Monitor ERDDAP deployment with uptime-kuma={}", uptime_kuma_url)
+    if erddap_url is None:
+        if os.environ.get("ERDDAP_baseHttpsUrl"):
+            erddap_url = os.environ.get("ERDDAP_baseHttpsUrl") + "/erddap"
+            logger.info("Using erddap_url=ERDDAP_baseHttpsUrl={}", erddap_url)
+        elif os.environ.get("ERDDAP_baseUrl"):
+            erddap_url = os.environ.get("ERDDAP_baseUrl") + "/erddap"
+            logger.info("Using erddap_url=ERDDAP_baseUrl={}", erddap_url)
+        else:
+            logger.error("ERDDAP_baseUrl or ERDDAP_baseHttpsUrl is required")
+            sys.exit(1)
+    else:
+        logger.info("Using erddap_url={}", erddap_url)
+    if dry_run:
+        logger.warning("Dry run mode enabled")
+    try:
+        uptime_kuma_monitor(
+            uptime_kuma_url,
+            username,
+            password,
+            token=token,
+            erddap_name=erddap_name,
+            erddap_url=erddap_url,
+            status_page_slug=status_page_slug,
+            status_page=status_page,
+            datasets=list(ctx.obj["erddap"].datasets.values()),
+            dry_run=dry_run,
+        )
+    except:
+        logger.exception("Failed to monitor ERDDAP deployment", exc_info=True)
+        sys.exit(1)
+
+
+if __name__ == "__main__":
+    monitor()

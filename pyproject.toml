@@ -26,4 +26,4 @@ requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.scripts]
-erddap_deploy = 'erddap_deploy.__main__:main'
+erddap_deploy = 'erddap_deploy.cli:cli'
