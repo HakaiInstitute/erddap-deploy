@@ -24,11 +24,15 @@ def get_erddap_env_variables():
     }
 
 
-@click.group()
+@click.group(chain=True)
 @click.option(
     "--datasets-xml",
     type=str,
-    help="Glob expression path to datasets.xml (or multiple dataset xmls) use to generate ERDDAP datasets.xml. If not provided, ERDDAP will use the datasets.xml in the ERDDAP content directory.",
+    help=(
+        "Glob expression path to datasets.xml (or multiple dataset xmls) "
+        "use to generate ERDDAP datasets.xml. If not provided, ERDDAP will "
+        "use the datasets.xml in the ERDDAP content directory."
+    ),
     default="**/datasets.d/*.xml|**/datasets.xml",
     envvar="ERDDAP_DATASETS_XML",
 )
