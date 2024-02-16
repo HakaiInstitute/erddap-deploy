@@ -111,16 +111,14 @@ class Erddap:
             if glob(search, recursive=self.recursive)
         ]
         if not search_path:
-            logger.debug(
+            logger.warning(
                 "No datasets.xml found with search path {} recursive={}",
                 self.datasets_xml_dir.split("|"),
                 self.recursive,
             )
             return
-        logger.info("Found datasets.xml with search path {}", search_path[0])
-
         xml_files = [files for files in glob(search_path[0], recursive=self.recursive)]
-        logger.info("Found {} datasets.xml files: {}", len(xml_files), xml_files)
+        logger.info("Found {} files matching datasets.xml with search path {}: {}", len(xml_files), search_path[0], xml_files)
         datasets_xml = "\n".join(
             [Path(file).read_text(encoding=self.encoding) for file in xml_files]
         )
