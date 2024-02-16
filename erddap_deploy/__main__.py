@@ -195,7 +195,7 @@ def save(ctx, output):
     "--hard-flag-dir",
     help="Directory to save hard flag",
     type=str,
-    default="{bigParentDirectory}/erddap/hardFlag",
+    default="{bigParentDirectory}/hardFlag",
     envvar="ERDDAP_HARD_FLAG_DIR",
     show_default=True,
 )
