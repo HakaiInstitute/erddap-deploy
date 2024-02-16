@@ -1,0 +1,2 @@
+linter:
+	isort .; black .;
