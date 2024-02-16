@@ -153,20 +153,6 @@ def save(ctx, output):
     envvar="ERDDAP_DATASETS_REPO_BRANCH",
 )
 @click.option(
-    "--github-token",
-    help="Github token to access private repos",
-    type=str,
-    default=None,
-    envvar="GITHUB_TOKEN",
-)
-@click.option(
-    "--github-token-username",
-    help="Github token username",
-    type=str,
-    default=None,
-    envvar="GITHUB_TOKEN_USERNAME",
-)
-@click.option(
     "--pull",
     help="Pull from remote",
     type=bool,
@@ -205,8 +191,6 @@ def sync(
     ctx,
     repo,
     branch,
-    github_token,
-    github_token_username,
     pull,
     local_repo_path,
     hard_flag,
@@ -221,9 +205,7 @@ def sync(
     hard_flag_dir = Path(hard_flag_dir.format(**path_vars))
 
     # Get repo if not available and checkout branch and pull
-    update_local_repository(
-        repo, branch, github_token, github_token_username, pull, local_repo_path
-    )
+    update_local_repository(repo, branch, pull, local_repo_path)
 
     # compare active dataset vs HEAD
     logger.info("Compare active dataset vs HEAD")
@@ -256,9 +238,7 @@ def sync(
     logger.info("datasets.xml updated")
 
 
-def update_local_repository(
-    repo_url, branch, github_token, github_token_username, pull, local
-):
+def update_local_repository(repo_url, branch, pull, local):
     """Get repo if not available and checkout branch and pull"""
 
     logger.debug(
@@ -267,7 +247,6 @@ def update_local_repository(
     if repo_url and repo_url[-1] == "/":
         logger.debug("Remove trailing / from repo_url")
         repo_url = repo_url[:-1]
-
 
     # Clone or load repo
     if not repo_url and not Path(local).exists():
@@ -282,14 +261,6 @@ def update_local_repository(
             logger.warning(
                 f"Local [{local}] repo.remote.origin.get-url = {origin_url}  is not the same repo={repo_url}"
             )
-    
-    # Add token within remote url
-    if github_token:
-        logger.info("Add github token to remote url")
-        repo_url = repo_url.split('//')[-1].split('@')[-1]
-        new_origin = f"https://{github_token}@{repo_url}"
-        logger.debug(f"Set remote origin to {new_origin}")
-        repo.remotes.origin.set_url(new_origin)
 
     # Checkout branch and pull
     if branch:
