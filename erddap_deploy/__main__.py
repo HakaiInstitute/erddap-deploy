@@ -138,11 +138,11 @@ def save(ctx, output):
 @main.command()
 @click.option(
     "-r",
-    "--repo",
+    "--repo-url",
     help="Path to git repo",
     type=str,
     default=None,
-    envvar="ERDDAP_DATASETS_REPO",
+    envvar="ERDDAP_DATASETS_REPO_URL",
 )
 @click.option(
     "-b",
@@ -189,7 +189,7 @@ def save(ctx, output):
 @logger.catch(reraise=True)
 def sync(
     ctx,
-    repo,
+    repo_url,
     branch,
     pull,
     local_repo_path,
@@ -205,7 +205,7 @@ def sync(
     hard_flag_dir = Path(hard_flag_dir.format(**path_vars))
 
     # Get repo if not available and checkout branch and pull
-    update_local_repository(repo, branch, pull, local_repo_path)
+    update_local_repository(repo_url, branch, pull, local_repo_path)
 
     # compare active dataset vs HEAD
     logger.info("Compare active dataset vs HEAD")
