@@ -1,7 +1,6 @@
-# test-datasets-xml.yaml
----
-name: "erddap-sync-datasets-xml"
-description: "Update Uptime-Kuma monitoring of a remote ERDDAP server based on the datasets.xml files of the remote server files and environemnt variables."
+name: "Sync ERDDAP datasets.xml file to remote server"
+description: "Update remote datasets.xml file on an docker container ERDDAP
+  server via SSH."
 inputs:
   datasets_xml:
     description: "Path to the datasets.xml file to be checked.
@@ -20,26 +19,28 @@ inputs:
   container_name:
     description: "The container to sync the datasets.xml file to."
     required: true
-  uptime_kuma_url:
-    description: "URL to upttime_kuma_url. Default to server UPTIME_KUMA_URL
-      environment variable."
+  repo_url:
+    description: "The repository url to sync the datasets.xml file from."
     required: false
-  uptime_kuma_username:
-    description: "Uptime Kuma username. Default to server UPTIME_KUMA_USERNAME
-      environment variable available within server."
+    default: "${{ github.repositoryURL }}"
+  branch:
+    description: "The branch to sync the datasets.xml file from."
     required: false
-  uptime_kuma_password:
-    description: "Uptime Kuma password. Default to server UPTIME_KUMA_PASSWORD
-      environment variable available within server."
-  uptime_kuma_token:
-    description: "Uptime Kuma token. Default to server UPTIME_KUMA_TOKEN
-      environment variable available within server."
-  erddap_url:
-    description: "The ERDDAP server URL to monitor. Default to server ERDDAP_URL
-      environment variable available within server."
-  erddap_name:
-    description: "The ERDDAP server name use to define this deployment on uptime
-      kuma. default to ERDDAP_URL environment variable available within server."
+    default: "${{ github.ref_name }}"
+  pull:
+    description: "If true, the action will pull the repository before syncing."
+    required: false
+    default: true
+  local_repo_path:
+    description: "The local path within the container where the present
+      repository is cloned."
+    required: false
+  hard_flag:
+    description: "Generate hard flags on datasets changes."
+    required: false
+    default: true
+  hard_flag_dir:
+    description: "The directory to store the hard flags."
     required: false
   ssh_host:
     description: "The ssh host to connecto the erddap server."
@@ -72,10 +73,11 @@ runs:
           ${{ inputs.recursive && '--recursive' || '' }} \
           ${{ inputs.active_datasets_xml && '--active-datasets-xml=' || '' }}${{ inputs.active_datasets_xml }} \
           ${{ inputs.big_parent_directory && '--big-parent-directory=' || '' }}${{ inputs.bigParentDirectory }} \
-          monitor \
-          ${{ inputs.uptime_kuma_url && '--uptime-kuma-url=' || '' }}${{ inputs.uptime_kuma_url }} \
-          ${{ inputs.uptime_kuma_username && '--username=' || '' }}${{ inputs.uptime_kuma_username }} \
-          ${{ inputs.uptime_kuma_password && '--password=' || '' }}${{ inputs.uptime_kuma_password }} \
-          ${{ inputs.uptime_kuma_token && '--token=' || '' }}${{ inputs.uptime_kuma_token }} \
-          ${{ inputs.erddap_url && '--erddap-url=' || '' }}${{ inputs.erddap_url }} \
-          ${{ inputs.erddap_name && '--erddap-name=' || '' }}${{ inputs.erddap_name }};
+          sync \
+          ${{ inputs.repo && '--repo=' || '' }}${{ inputs.repo }} \
+          ${{ inputs.branch && '--branch=' || '' }}${{ inputs.branch }} \
+          ${{ inputs.pull && '--pull' || '' }} \
+          ${{ inputs.local_repo_path && '--local-repo-path=' || '' }}${{ inputs.local_repo_path }} \
+          ${{ inputs.hard_flag && '--hard-flag' || '' }} \
+          ${{ inputs.hard_flag_dir && '--hard-flag-dir=' || '' }}${{ inputs.hard_flag_dir }};
+

@@ -1,6 +1,4 @@
-# test-datasets-xml.yaml
----
-name: "erddap-predeployment-checks"
+name: "Test ERDDAP Configuration"
 description: "Run a series of checks on an erddap configuration repository.
   This action is intended to be run prior to deploying an erddap instance."
 inputs:
@@ -10,9 +8,10 @@ inputs:
     required: false
     default: "**/datasets.xml|**/datasets.d/*.xml"
   recursive:
-    description: "If true, subdirectories will be searched for datasets.xml files."
+    description: "Search recursively for datasets_xml files in subdirectories.
+      Default to true."
     required: false
-    default: true
+    default: "true"
 runs:
   using: "composite"
   steps:

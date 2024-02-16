@@ -1,7 +1,5 @@
-# test-datasets-xml.yaml
----
-name: "erddap-sync-datasets-xml"
-description: "Update Uptime-Kuma monitoring of a an ERDDAP server via the datasets.xml files within this repository and github secrets."
+name: "Sync Uptime-Kuma Monitoring of an ERDDAP deployment on remote server"
+description: "Update Uptime-Kuma monitoring of a remote ERDDAP server based on the datasets.xml files of the remote server files and environemnt variables."
 inputs:
   datasets_xml:
     description: "Path to the datasets.xml file to be checked.
@@ -41,10 +39,6 @@ inputs:
     description: "The ERDDAP server name use to define this deployment on uptime
       kuma. default to ERDDAP_URL environment variable available within server."
     required: false
-  dry_run:
-    description: "If true, the action will not perform any changes."
-    required: false
-    default: true
   ssh_host:
     description: "The ssh host to connecto the erddap server."
     required: true
@@ -57,30 +51,30 @@ inputs:
   ssh_port:
     description: "The ssh port to connecto the erddap server."
     required: false
-    default: 22
+    default: "22"
+
 runs:
   using: "composite"
   steps:
-    - name: Install Python
-      uses: actions/setup-python@v5
+    - name: Update ERDDAP dataset.xml
+      uses: appleboy/ssh-action@v0.1.10
       with:
-        python-version: "3.11"
-    - name: Install Dependencies
-      run: pip install git+https://github.com/HakaiInstitute/erddap-deploy.git
-      shell: bash
-    - name: Run checks
-      shell: bash
-      run: |
-        erddap_deploy \
-        ${{ inputs.datasets_xml && '--datasets-xml=' || '' }}${{ inputs.datasets_xml }} \
-        ${{ inputs.recursive && '--recursive' || '' }} \
-        ${{ inputs.active_datasets_xml && '--active-datasets-xml=' || '' }}${{ inputs.active_datasets_xml }} \
-        ${{ inputs.big_parent_directory && '--big-parent-directory=' || '' }}${{ inputs.bigParentDirectory }} \
-        monitor \
-        ${{ inputs.uptime_kuma_url && '--uptime-kuma-url=' || '' }}${{ inputs.uptime_kuma_url }} \
-        ${{ inputs.uptime_kuma_username && '--username=' || '' }}${{ inputs.uptime_kuma_username }} \
-        ${{ inputs.uptime_kuma_password && '--password=' || '' }}${{ inputs.uptime_kuma_password }} \
-        ${{ inputs.uptime_kuma_token && '--token=' || '' }}${{ inputs.uptime_kuma_token }} \
-        ${{ inputs.erddap_url && '--erddap-url=' || '' }}${{ inputs.erddap_url }} \
-        ${{ inputs.erddap_name && '--erddap-name=' || '' }}${{ inputs.erddap_name }} \
-        ${{ inputs.dry_run && '--dry-run' || '' }};
+        host: ${{ inputs.ssh_host }}
+        username: ${{ inputs.ssh_username }}
+        key: ${{ inputs.ssh_key }}
+        port: ${{ inputs.ssh_port }}
+        script: |
+          docker exec \
+          $(docker ps --filter name=${{ inputs.container_name }} -q) \
+          erddap_deploy \
+          ${{ inputs.datasets_xml && '--datasets-xml=' || '' }}${{ inputs.datasets_xml }} \
+          ${{ inputs.recursive && '--recursive' || '' }} \
+          ${{ inputs.active_datasets_xml && '--active-datasets-xml=' || '' }}${{ inputs.active_datasets_xml }} \
+          ${{ inputs.big_parent_directory && '--big-parent-directory=' || '' }}${{ inputs.bigParentDirectory }} \
+          monitor \
+          ${{ inputs.uptime_kuma_url && '--uptime-kuma-url=' || '' }}${{ inputs.uptime_kuma_url }} \
+          ${{ inputs.uptime_kuma_username && '--username=' || '' }}${{ inputs.uptime_kuma_username }} \
+          ${{ inputs.uptime_kuma_password && '--password=' || '' }}${{ inputs.uptime_kuma_password }} \
+          ${{ inputs.uptime_kuma_token && '--token=' || '' }}${{ inputs.uptime_kuma_token }} \
+          ${{ inputs.erddap_url && '--erddap-url=' || '' }}${{ inputs.erddap_url }} \
+          ${{ inputs.erddap_name && '--erddap-name=' || '' }}${{ inputs.erddap_name }};
