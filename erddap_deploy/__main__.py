@@ -283,11 +283,13 @@ def update_local_repository(
                 f"Local [{local}] repo.remote.origin.get-url = {origin_url}  is not the same repo={repo_url}"
             )
     
-    # Set user 
+    # Add token within remote url
     if github_token:
-        repo.config_writer().set_value("user", "password", github_token).release()
-    if github_token_username:
-        repo.config_writer().set_value("user", "name", github_token_username).release()
+        logger.info("Add github token to remote url")
+        repo_url = repo_url.split('//')[-1].split('@')[-1]
+        new_origin = f"https://{github_token}@{repo_url}"
+        logger.debug(f"Set remote origin to {new_origin}")
+        repo.remotes.origin.set_url(new_origin)
 
     # Checkout branch and pull
     if branch:
