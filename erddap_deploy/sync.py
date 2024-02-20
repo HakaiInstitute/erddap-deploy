@@ -143,7 +143,10 @@ def update_local_repository(repo_url, branch, pull, local):
         origin_url = repo.git.remote("get-url", "origin")
         if repo_url and origin_url != repo_url:
             logger.warning(
-                "Local [{}] repo.remote.origin.get-url = {}  is not the same repo={}",local, origin_url, repo_url
+                "Local [{}] repo.remote.origin.get-url = {}  is not the same repo={}",
+                local,
+                origin_url,
+                repo_url,
             )
 
     # Checkout branch and pull
