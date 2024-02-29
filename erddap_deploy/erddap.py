@@ -20,7 +20,7 @@ class Variable:
 
     def _get_attrs(self):
         return {
-            item.tag: item.text for item in self.variable.findall("addAttributes/att")
+            item.attrib["name"]: item.text for item in self.variable.findall(".//addAttributes/att")
         }
 
 
