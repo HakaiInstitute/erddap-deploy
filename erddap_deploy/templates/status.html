@@ -1,0 +1,11 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Status Page</title>
+</head>
+<body>
+    <h1>Datasets Status Page</h1>
+    <h2>{{ baseHttpsUrl or baseUrl }}</h2>
+    <div id="status-table">{{latest_status.to_html()}}</div>
+</body>
+</html>

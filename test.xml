@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><erddapDatasets><dataset type="EDDTableFromDatabase" datasetID="dataset3">
   <driverName>org.postgresql.Driver</driverName>
-  <sourceUrl>jdbc:postgresql://db.hakai.org:5432/hakai?user=hakai_erddap_user&amp;password=z5L96e7h8PiJqSFh</sourceUrl>
+  <sourceUrl>hakai_erddap_sourceUrl</sourceUrl>
   <driverName>org.postgresql.Driver</driverName>
   <schemaName>erddap</schemaName>
   <tableName>"dataset3"</tableName>
@@ -869,7 +869,7 @@
 
 </dataset>
 <dataset type="EDDTableFromDatabase" datasetID="dataset2">
-  <sourceUrl>jdbc:postgresql://db.hakai.org:5432/hakai?user=hakai_erddap_user&amp;password=z5L96e7h8PiJqSFh</sourceUrl>
+  <sourceUrl>hakai_erddap_sourceUrl</sourceUrl>
   <driverName>org.postgresql.Driver</driverName>
   <schemaName>erddap</schemaName>
   <tableName>"dataset2"</tableName>
@@ -2345,7 +2345,7 @@
 </dataset>
 <dataset type="EDDTableFromDatabase" datasetID="dataset4">
   <driverName>org.postgresql.Driver</driverName>
-  <sourceUrl>jdbc:postgresql://db.hakai.org:5432/hakai?user=hakai_erddap_user&amp;password=z5L96e7h8PiJqSFh</sourceUrl>
+  <sourceUrl>hakai_erddap_sourceUrl</sourceUrl>
   <driverName>org.postgresql.Driver</driverName>
   <schemaName>erddap</schemaName>
   <tableName>"dataset3"</tableName>
