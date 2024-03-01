@@ -20,7 +20,8 @@ class Variable:
 
     def _get_attrs(self):
         return {
-            item.attrib["name"]: item.text for item in self.variable.findall(".//addAttributes/att")
+            item.attrib["name"]: item.text
+            for item in self.variable.findall(".//addAttributes/att")
         }
 
 
@@ -73,16 +74,19 @@ class Erddap:
     def __init__(
         self,
         datasets_xml_dir,
+        setup_xml_dir: str = "**/setup.xml",
         secrets: dict = None,
         encoding: str = "UTF-8",
         recursive: bool = True,
         lazy_load: bool = False,
     ):
         self.datasets_xml_dir = datasets_xml_dir
+        self.setup_xml_dir = setup_xml_dir
         self.recursive = recursive
         self.encoding = encoding
         self.secrets = {**self._get_env_secrets(), **(secrets or {})}
         self.datasets_xml = None
+        self.setup = None
         self.tree = None
         self.datasets = {}
         if not lazy_load:
@@ -227,3 +231,99 @@ class Erddap:
     def copy(self):
         """Get a copy of the Erddap object"""
         return copy(self)
+
+
+# https://cfconventions.org/Data/cf-conventions/cf-conventions-1.8/cf-conventions.html#discrete-sampling-geometries
+CDM_DATA_TYPES = (
+    "Grid",
+    "Point",
+    "Trajectory",
+    "Profile",
+    "TimeSeries",
+    "TimeSeriesProfile",
+    "Other",
+)
+
+# https://coastwatch.pfeg.noaa.gov/erddap/download/setupDatasetsXml.html#ioos_category
+IOOS_CATEGORIES = (
+    "Bathymetry",
+    "Biology",
+    "Bottom Character",
+    "CO2",
+    "Colored Dissolved Organic Matter",
+    "Contaminants",
+    "Currents",
+    "Dissolved Nutrients",
+    "Dissolved O2",
+    "Ecology",
+    "Fish Abundance",
+    "Fish Species",
+    "Heat Flux",
+    "Hydrology",
+    "Ice Distribution",
+    "Identifier",
+    "Location",
+    "Meteorology",
+    "Ocean Color",
+    "Optical Properties",
+    "Other",
+    "Pathogens",
+    "Physical Oceanography",
+    "Phytoplankton Species",
+    "Pressure",
+    "Productivity",
+    "Quality",
+    "Salinity",
+    "Sea Level",
+    "Statistics",
+    "Stream Flow",
+    "Surface Waves",
+    "Taxonomy",
+    "Temperature",
+    "Time",
+    "Total Suspended Matter",
+    "Unknown",
+    "Wind",
+    "Zooplankton Species",
+    "Zooplankton Abundance",
+)
+
+EDD_TYPES = (
+    "EDDGridAggregateExistingDimension",
+    "EDDTableFromEML",
+    "EDDGridFromAudioFiles",
+    "EDDTableFromEMLBatch",
+    "EDDGridFromDap",
+    "EDDTableFromErddap",
+    "EDDGridFromEDDTable",
+    "EDDTableFromFileNames",
+    "EDDGridFromErddap",
+    "EDDTableFromHttpGet",
+    "EDDGridFromMergeIRFiles",
+    "EDDTableFromInPort",
+    "EDDGridFromNcFiles",
+    "EDDTableFromIoosSOS",
+    "EDDGridFromNcFilesUnpacked",
+    "EDDTableFromJsonlCSVFiles",
+    "EDDGridFromThreddsCatalog",
+    "EDDTableFromMultidimNcFiles",
+    "EDDGridLonPM180FromErddapCatalog",
+    "EDDTableFromNcFiles",
+    "EDDGridLon0360FromErddapCatalog",
+    "EDDTableFromNcCFFiles",
+    "EDDTableFromAsciiFiles",
+    "EDDTableFromNccsvFiles",
+    "EDDTableFromAudioFiles",
+    "EDDTableFromOBIS",
+    "EDDTableFromAwsXmlFiles",
+    "EDDTableFromSOS",
+    "EDDTableFromBCODMO",
+    "EDDTableFromThreddsFiles",
+    "EDDTableFromCassandra",
+    "EDDTableFromWFSFiles",
+    "EDDTableFromColumnarAsciiFiles",
+    "EDDsFromFiles",
+    "EDDTableFromDapSequence",
+    "EDDTableFromDatabase",
+    "EDDTableFromEDDGrid",
+)

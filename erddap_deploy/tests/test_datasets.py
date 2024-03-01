@@ -3,7 +3,7 @@ import os
 import pytest
 from loguru import logger
 
-from erddap_deploy.erddap import Erddap
+from erddap_deploy.erddap import CDM_DATA_TYPES, IOOS_CATEGORIES, Erddap
 
 erddap = Erddap(os.environ.get("ERDDAP_DATASETS_XML", "tests/data/datasets.d/*.xml"))
 
@@ -18,24 +18,13 @@ def dataset(request):
     logger.info(f"Finished testing {request.param.dataset_id}")
 
 
-cdm_data_types = (
-    "Grid",
-    "Point",
-    "Trajectory",
-    "Profile",
-    "TimeSeries",
-    "TimeSeriesProfile",
-    "Other",
-)
-
-
 class TestDatasetGlobalAttributes:
     def test_dataset_cdm_data_type(self, dataset):
         """Test that cdm_data_type is valid"""
         if dataset.type == "EDDTableFromErddap":
             return
         assert dataset.attrs["cdm_data_type"].lower() in [
-            item.lower() for item in cdm_data_types
+            item.lower() for item in CDM_DATA_TYPES
         ], f"Dataset {dataset.dataset_id} has invalid cdm_data_type {dataset.attrs['cdm_data_type']}"
         # TODO should cdm_data_type be case insensitive?
 
@@ -96,6 +85,23 @@ class TestDatasetGlobalAttributes:
         assert (
             not unknown_variables
         ), f"Dataset {dataset.dataset_id} has invalid cdm_profile_variables {unknown_variables}"
+
+
+class TestDatasetsVariablesAttributes:
+    def test_variable_ioos_category(self, dataset):
+        """Test that ERDDAP ioos_category is valid"""
+        ioos_category_required = os.getenv(
+            "ERDDAP_variablesMustHaveIoosCategory", "false"
+        ) in ("true", "True", 1, "1")
+        if not ioos_category_required:
+            return
+
+        for variable in dataset.variables.values():
+            if variable.destination_name in ("latitude", "longitude", "time", "depth"):
+                continue
+            assert (
+                variable.attrs.get("ioos_category") in IOOS_CATEGORIES
+            ), f"{variable.destination_name=} in {dataset.dataset_id=} has invalid {variable.attrs.get('ioos_category')=}"
 
 
 if __name__ == "__main__":
