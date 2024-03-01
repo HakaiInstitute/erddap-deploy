@@ -474,7 +474,7 @@ def monitor(
             datasets=list(ctx.obj["erddap"].load().datasets.values()),
             dry_run=dry_run,
         )
-    except:
+    except Exception:
         logger.exception("Failed to monitor ERDDAP deployment", exc_info=True)
         sys.exit(1)
 
