@@ -8,7 +8,8 @@ from typing import Union
 import click
 from dotenv import load_dotenv
 from loguru import logger
-from uptime_kuma_api import UptimeKumaApi
+from tqdm import tqdm
+from uptime_kuma_api import UptimeKumaApi, exceptions
 
 load_dotenv()
 
@@ -23,6 +24,8 @@ def get_erddap_protocol(dataset):
 
 
 def dry_run(func):
+    """Decorator to log the action that would be taken if dry_run is not enabled"""
+
     def wrapper(self, *args, **kwargs):
         if self.dry_run:
             logger.info(
@@ -30,6 +33,21 @@ def dry_run(func):
             )
         else:
             return func(self, *args, **kwargs)
+
+    return wrapper
+
+
+def retry_timeout(func, retries=3):
+    """Decorator to retry a function"""
+
+    def wrapper(*args, **kwargs):
+        for i in range(retries):
+            try:
+                return func(*args, **kwargs)
+            except exceptions.TimeoutError as e:
+                logger.error("Error: {} retrying...", e)
+                continue
+        raise Exception(f"Failed to run {func.__name__} after 3 retries")
 
     return wrapper
 
@@ -286,6 +304,32 @@ class ErddapMonitor:
         pass
 
 
+def uptime_delete_monitors(api, delete_monitors, dry_run=False):
+    @logger.catch()
+    @retry_timeout
+    def _delete_monitor(monitor):
+        logger.info("Deleting monitor {}", monitor["pathName"])
+        api.delete_monitor(monitor["id"])
+
+    monitors_to_delete = [
+        monitor
+        for monitor in api.get_monitors()
+        if monitor["url"] and re.match(delete_monitors, monitor["url"])
+    ]
+    logger.info("{} monitors matched to delete", len(monitors_to_delete))
+    if dry_run:
+        for monitor in monitors_to_delete:
+            logger.info("Would delete monitor {}", monitor["pathName"])
+        return
+    for monitor in tqdm(
+        monitors_to_delete,
+        desc="Deleting monitors",
+        unit="monitor",
+        total=len(monitors_to_delete),
+    ):
+        _delete_monitor(monitor)
+
+
 def uptime_kuma_monitor(
     uptime_kuma_url: str,
     username: str = None,
@@ -296,11 +340,17 @@ def uptime_kuma_monitor(
     status_page_slug: str = None,
     status_page: Path = None,
     datasets: str = "**/datasets.xml",
+    delete_monitors: str = None,
     dry_run: bool = False,
+    timeout: float = 10.0,
 ):
     # Connect to the uptime kuma instance
-    with UptimeKumaApi(uptime_kuma_url) as api:
+    with UptimeKumaApi(uptime_kuma_url, timeout=timeout) as api:
         api.login(username=username, password=password, token=token)
+
+        if delete_monitors:
+            uptime_delete_monitors(api, delete_monitors, dry_run=dry_run)
+            return
 
         erddap_monitor = ErddapMonitor(
             api=api,
@@ -361,21 +411,25 @@ def uptime_kuma_monitor(
     "--uptime-kuma-url",
     help="The URL of the uptime kuma instance",
     envvar="UPTIME_KUMA_URL",
+    required=True,
 )
 @click.option(
     "--username",
     help="The username of the uptime kuma instance",
     envvar="UPTIME_KUMA_USERNAME",
+    required=True,
 )
 @click.option(
     "--password",
     help="The password of the uptime kuma instance",
     envvar="UPTIME_KUMA_PASSWORD",
+    required=True,
 )
 @click.option(
     "--token",
     help="The token of the uptime kuma instance",
     envvar="UPTIME_KUMA_TOKEN",
+    required=True,
 )
 @click.option(
     "--erddap-name",
@@ -404,11 +458,24 @@ def uptime_kuma_monitor(
     envvar="UPTIME_KUMA_STATUS_PAGE",
 )
 @click.option(
+    "--delete-monitors",
+    default=None,
+    type=str,
+    help="Regex expression of monitors to delete. When define no new monitors will be added, only the ones matching the regex will be deleted",
+)
+@click.option(
     "--dry-run",
     is_flag=True,
     help="Do not make any changes to uptime kuma",
     envvar="DRY_RUN",
     default=False,
+)
+@click.option(
+    "--timeout",
+    default=10.0,
+    type=float,
+    help="Timeout for the API requests",
+    envvar="UPTIME_KUMA_TIMEOUT",
 )
 @click.pass_context
 @logger.catch(reraise=True)
@@ -417,31 +484,16 @@ def monitor(
     uptime_kuma_url: str,
     username: str,
     password: str,
-    token: str = None,
+    token: str,
     erddap_name: str = None,
     erddap_url: str = None,
     status_page_slug: str = None,
     status_page: Path = None,
+    delete_monitors: str = None,
     dry_run: bool = False,
+    timeout: float = 10.0,
 ):
-    """Monitor ERDDAP deployment via uptime kuma status page.
-
-    Required fields: uptime-kuma-url, username,password and token
-    """
-
-    if all([uptime_kuma_url, username, password, token]) is None:
-        logger.warning("No uptime kuma credentials provided")
-        sys.exit(1)
-    elif (
-        uptime_kuma_url is None or username is None or password is None or token is None
-    ):
-        missing = [
-            parm
-            for parm in [uptime_kuma_url, username, password, token]
-            if parm is None
-        ]
-        logger.warning("Missing uptime kuma parameters: {}", missing)
-        sys.exit(1)
+    """Monitor ERDDAP deployment via uptime kuma status page."""
 
     if dry_run:
         logger.warning("Dry run mode enabled")
@@ -472,11 +524,12 @@ def monitor(
             status_page_slug=status_page_slug,
             status_page=status_page,
             datasets=list(ctx.obj["erddap"].load().datasets.values()),
+            delete_monitors=delete_monitors,
             dry_run=dry_run,
+            timeout=timeout,
         )
     except Exception:
         logger.exception("Failed to monitor ERDDAP deployment", exc_info=True)
-        sys.exit(1)
 
 
 if __name__ == "__main__":

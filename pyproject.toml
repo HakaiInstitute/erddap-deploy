@@ -16,6 +16,7 @@ loguru = "^0.7.2"
 gitpython = "^3.1.41"
 uptime-kuma-api = "^1.2.1"
 python-dotenv = "^1.0.1"
+tqdm = "^4.66.2"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.12.0"
