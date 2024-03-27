@@ -164,7 +164,7 @@ class Erddap:
             for item in self.tree.findall("dataset")
         }
 
-    @logger.catch
+    @logger.catch(reraise=True)
     def load(self):
         """Load datasets.xml file(s), add secrets and parse it into a dictionary of Dataset objects"""
         self._load_datasets_xml()
