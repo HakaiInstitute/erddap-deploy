@@ -100,3 +100,23 @@ def test_secret_in_datasets_xml():
     erddap.load()
     assert "TEST_SECRET" not in erddap.datasets_xml
     assert "TEST_VALUE" in erddap.datasets_xml
+
+
+def test_save_original_erddap_with_user(tmp_path):
+    erddap = Erddap(
+        datasets_xml_dir="tests/data/**/*.xml",
+        recursive=True,
+    )
+    erddap.save(tmp_path / "datasets.xml", source="original")
+    assert "<user" in erddap.datasets_xml
+    assert "<user" in (tmp_path / "datasets.xml").read_text()
+
+
+def test_save_parsed_erddap_with_user(tmp_path):
+    erddap = Erddap(
+        datasets_xml_dir="tests/data/**/*.xml",
+        recursive=True,
+    )
+    erddap.save(tmp_path / "datasets.xml", source="parsed")
+    assert "<user" in erddap.datasets_xml
+    assert "<user" in (tmp_path / "datasets.xml").read_text()

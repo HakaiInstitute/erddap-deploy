@@ -213,6 +213,8 @@ class Erddap:
             source (str): Source of the datasets.xml. Can be "original" or "parsed"
             encoding (str): Encoding of the output file
         """
+        encoding = encoding or self.encoding
+
         if self.datasets_xml is None:
             return logger.warning("No datasets.xml to save")
         elif source == "original":
@@ -223,10 +225,12 @@ class Erddap:
 
             Path(output).write_text(self.datasets_xml, encoding=self.encoding)
         elif source == "parsed":
-            encoding = encoding or self.encoding
-            return f'<?xml version="1.0" encoding="{self.encoding}"?>\n' + ET.tostring(
-                self.tree, encoding=self.encoding
-            ).decode(self.encoding)
+
+            Path(output).write_text(
+                f'<?xml version="1.0" encoding="{encoding}"?>\n'
+                + ET.tostring(self.tree, encoding=encoding).decode(encoding),
+                encoding=encoding,
+            )
 
     def copy(self):
         """Get a copy of the Erddap object"""
