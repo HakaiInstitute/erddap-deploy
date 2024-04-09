@@ -64,6 +64,7 @@ class ErddapMonitor:
         parent: dict = {},
         monitors: list = [],
         dry_run: bool = False,
+        monitor_kwargs: dict = None,
     ):
         self.api = api
         self.erddap_name = erddap_name or re.search(r"https?://(.*)", erddap_url).group(
@@ -79,6 +80,8 @@ class ErddapMonitor:
         self.parent = parent or self.get_parent()
         self.monitors = monitors or self.get_monitors()
         self.dry_run = dry_run
+        self.monitor_kwargs = monitor_kwargs
+
 
     def _get_slug_from_erddap_name(self) -> str:
         # replace all non alphanumeric characters with a dash
@@ -166,7 +169,7 @@ class ErddapMonitor:
     @dry_run
     def add_monitor(self, *args, **kwargs):
         logger.info("Add monitor {}", kwargs.get("name"))
-        return self.api.add_monitor(*args, **kwargs)
+        return self.api.add_monitor(*args, **(self.monitor_kwargs or {}), **kwargs)
 
     @dry_run
     def pause_monitor(self, *args, **kwargs):
@@ -342,6 +345,7 @@ def uptime_kuma_monitor(
     datasets: str = "**/datasets.xml",
     delete_monitors: str = None,
     dry_run: bool = False,
+    monitor_kwargs: dict = None,
     timeout: float = 10.0,
 ):
     # Connect to the uptime kuma instance
@@ -360,6 +364,7 @@ def uptime_kuma_monitor(
             status_page=status_page,
             datasets=datasets,
             dry_run=dry_run,
+            monitor_kwargs=monitor_kwargs
         )
 
         logger.info(f"Found {len(erddap_monitor.monitors)} erddap dataset monitors")
@@ -471,6 +476,13 @@ def uptime_kuma_monitor(
     default=False,
 )
 @click.option(
+    "--monitor-kwargs",
+    type=str,
+    help="Additional arguments to pass to the monitor creation",
+    envvar="UPTIME_KUMA_MONITOR_KWARGS",
+    default=None,
+)
+@click.option(
     "--timeout",
     default=10.0,
     type=float,
@@ -491,6 +503,7 @@ def monitor(
     status_page: Path = None,
     delete_monitors: str = None,
     dry_run: bool = False,
+    monitor_kwargs: dict = None,
     timeout: float = 10.0,
 ):
     """Monitor ERDDAP deployment via uptime kuma status page."""
@@ -512,6 +525,13 @@ def monitor(
             sys.exit(1)
     else:
         logger.debug("Using erddap_url={}", erddap_url)
+    
+    if monitor_kwargs:
+        try:
+            monitor_kwargs = json.loads(monitor_kwargs)
+        except json.JSONDecodeError:
+            logger.error("Failed to parse monitor_kwargs as JSON")
+            sys.exit(1)
 
     try:
         uptime_kuma_monitor(
@@ -526,6 +546,7 @@ def monitor(
             datasets=list(ctx.obj["erddap"].load().datasets.values()),
             delete_monitors=delete_monitors,
             dry_run=dry_run,
+            monitor_kwargs=monitor_kwargs,
             timeout=timeout,
         )
     except Exception:
