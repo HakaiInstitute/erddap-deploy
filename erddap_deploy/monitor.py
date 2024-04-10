@@ -82,7 +82,6 @@ class ErddapMonitor:
         self.dry_run = dry_run
         self.monitor_kwargs = monitor_kwargs
 
-
     def _get_slug_from_erddap_name(self) -> str:
         # replace all non alphanumeric characters with a dash
         slug = re.sub(r"[^a-zA-Z0-9-]+", "-", self.erddap_name).lower()
@@ -333,6 +332,7 @@ def uptime_delete_monitors(api, delete_monitors, dry_run=False):
         _delete_monitor(monitor)
 
 
+@logger.catch(reraise=True)
 def uptime_kuma_monitor(
     uptime_kuma_url: str,
     username: str = None,
