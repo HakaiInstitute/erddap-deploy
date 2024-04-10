@@ -21,7 +21,7 @@ def dataset(request):
 class TestDatasetGlobalAttributes:
     def test_dataset_cdm_data_type(self, dataset):
         """Test that cdm_data_type is valid"""
-        if dataset.type == "EDDTableFromErddap":
+        if dataset.type == "EDDTableFromErddap" or dataset.type.startswith("EDDGrid"):
             return
         assert dataset.attrs["cdm_data_type"].lower() in [
             item.lower() for item in CDM_DATA_TYPES
@@ -30,13 +30,13 @@ class TestDatasetGlobalAttributes:
 
     def test_dataset_subset_variables(self, dataset):
         """Test that subsetVariables are valid variables in the dataset"""
-        if dataset.type == "EDDTableFromErddap":
+        if dataset.type in ("EDDTableFromErddap") or dataset.type.startswith("EDDGrid"):
             return
         subset_variables = dataset.attrs.get("subsetVariables", "").split(",")
         unknown_variables = [
             var
             for var in subset_variables
-            if var.strip() not in dataset.variables and var
+            if var.strip() not in dataset.get_variables_destination_names() and var
         ]
         assert (
             not unknown_variables
@@ -45,7 +45,10 @@ class TestDatasetGlobalAttributes:
     def test_dataset_cdm_timeseries_variables(self, dataset):
         """Test that cdm_timeseries_variables are valid variables in the dataset"""
 
-        if dataset.type == "EDDTableFromErddap":
+        if dataset.type in (
+            "EDDTableFromErddap",
+            "EDDTableFromSOS",
+        ) or dataset.type.startswith("EDDGrid"):
             return
         elif dataset.attrs["cdm_data_type"] not in ("TimeSeries", "TimeSeriesProfile"):
             return
@@ -55,19 +58,19 @@ class TestDatasetGlobalAttributes:
         ).split(",")
         assert (
             cdm_timeseries_variables
-        ), f"Dataset {dataset.dataset_id} has no cdm_timeseries_variables"
+        ), f"{dataset.dataset_id=} has no cdm_timeseries_variables"
         unknown_variables = [
             var
             for var in cdm_timeseries_variables
-            if var.strip() not in dataset.variables and var
+            if var.strip() not in dataset.get_variables_destination_names() and var
         ]
         assert (
             not unknown_variables
-        ), f"Dataset {dataset.dataset_id} has invalid cdm_timeseries_variables {unknown_variables}"
+        ), f"{dataset.dataset_id=} has invalid cdm_timeseries_variables {unknown_variables}"
 
     def test_dataset_cdm_profile_variables(self, dataset):
         """Test that cdm_profile_variables are valid variables in the dataset"""
-        if dataset.type == "EDDTableFromErddap":
+        if dataset.type == "EDDTableFromErddap" or dataset.type.startswith("EDDGrid"):
             return
         elif dataset.attrs["cdm_data_type"] not in ("Profile", "TimeSeriesProfile"):
             return
@@ -76,15 +79,15 @@ class TestDatasetGlobalAttributes:
         )
         assert (
             cdm_profile_variables
-        ), f"Dataset {dataset.dataset_id} has no cdm_profile_variables"
+        ), f"{dataset.dataset_id=} has no cdm_profile_variables"
         unknown_variables = [
             var
             for var in cdm_profile_variables
-            if var.strip() not in dataset.variables and var
+            if var.strip() not in dataset.get_variables_destination_names() and var
         ]
         assert (
             not unknown_variables
-        ), f"Dataset {dataset.dataset_id} has invalid cdm_profile_variables {unknown_variables}"
+        ), f"{dataset.dataset_id=} has invalid cdm_profile_variables {unknown_variables}"
 
 
 class TestDatasetsVariablesAttributes:

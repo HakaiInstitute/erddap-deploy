@@ -25,7 +25,7 @@ def test_erddap_load(erddap):
 
 
 def test_erddap_load_recursive():
-    erddap = Erddap(datasets_xml_dir="tests/data/**/*.xml", recursive=True)
+    erddap = Erddap(datasets_xml_dir="tests/data/datasets.d/**/*.xml", recursive=True)
     erddap.load()
     assert len(erddap.datasets) == 4
     assert "dataset1" in erddap.datasets
@@ -36,7 +36,9 @@ def test_erddap_load_recursive():
 
 def test_erddap_load_lazy():
     erddap = Erddap(
-        datasets_xml_dir="tests/data/**/*.xml", recursive=True, lazy_load=True
+        datasets_xml_dir="tests/data/datasets.d/**/*.xml",
+        recursive=True,
+        lazy_load=True,
     )
     assert len(erddap.datasets) == 0
     erddap.load()
@@ -49,7 +51,9 @@ def test_erddap_load_lazy():
 
 def test_erddap_load_secrets():
     erddap = Erddap(
-        datasets_xml_dir="tests/data/**/*.xml", recursive=True, secrets={"test": "test"}
+        datasets_xml_dir="tests/data/datasets.d/**/*.xml",
+        recursive=True,
+        secrets={"test": "test"},
     )
     assert len(erddap.secrets) == 1
     assert "test" in erddap.secrets
@@ -58,7 +62,7 @@ def test_erddap_load_secrets():
 
 def test_erddap_load_secrets_env(monkeypatch):
     monkeypatch.setenv("ERDDAP_SECRET_test", "test")
-    erddap = Erddap(datasets_xml_dir="tests/data/**/*.xml", recursive=True)
+    erddap = Erddap(datasets_xml_dir="tests/data/datasets.d/**/*.xml", recursive=True)
     assert len(erddap.secrets) == 1
     assert "test" in erddap.secrets
     assert erddap.secrets["test"] == "test"
@@ -68,7 +72,7 @@ def test_erddap_load_secrets_env(monkeypatch):
 def test_erddap_load_secrets_env_override(monkeypatch):
     monkeypatch.setenv("ERDDAP_SECRET_test", "test")
     erddap = Erddap(
-        datasets_xml_dir="tests/data/**/*.xml",
+        datasets_xml_dir="tests/data/datasets.d/**/*.xml",
         recursive=True,
         secrets={"test": "test2"},
     )
@@ -80,7 +84,7 @@ def test_erddap_load_secrets_env_override(monkeypatch):
 def test_erddap_load_secrets_env_prefix(monkeypatch):
     monkeypatch.setenv("ERDDAP_SECRET_test", "test")
     monkeypatch.setenv("ERDDAP_SECRET_test2", "test2")
-    erddap = Erddap(datasets_xml_dir="tests/data/**/*.xml", recursive=True)
+    erddap = Erddap(datasets_xml_dir="tests/data/datasets.d/**/*.xml", recursive=True)
     assert len(erddap.secrets) == 2
     assert "test" in erddap.secrets
     assert erddap.secrets["test"] == "test"
@@ -104,7 +108,7 @@ def test_secret_in_datasets_xml():
 
 def test_save_original_erddap_with_user(tmp_path):
     erddap = Erddap(
-        datasets_xml_dir="tests/data/**/*.xml",
+        datasets_xml_dir="tests/data/datasets.d/**/*.xml",
         recursive=True,
     )
     erddap.save(tmp_path / "datasets.xml", source="original")
@@ -114,9 +118,18 @@ def test_save_original_erddap_with_user(tmp_path):
 
 def test_save_parsed_erddap_with_user(tmp_path):
     erddap = Erddap(
-        datasets_xml_dir="tests/data/**/*.xml",
+        datasets_xml_dir="tests/data/datasets.d/**/*.xml",
         recursive=True,
     )
     erddap.save(tmp_path / "datasets.xml", source="parsed")
     assert "<user" in erddap.datasets_xml
     assert "<user" in (tmp_path / "datasets.xml").read_text()
+
+
+def test_unique_datasets():
+    erddap = Erddap(
+        datasets_xml_dir="tests/data/datasets.xml",
+        recursive=True,
+    )
+    erddap.load()
+    assert len(erddap.datasets) > 0

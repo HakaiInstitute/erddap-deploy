@@ -24,7 +24,7 @@ def test_erddap_deploy_help():
 class TestErddapDeployTest:
     def test_test(self):
         result = run_cli("test")
-        assert result.exit_code == 0
+        assert result.exit_code == 0, result.output
 
     def test_test_help(self):
         result = run_cli("test", "--help")
@@ -103,6 +103,25 @@ class TestErddapDeploySync:
         )
         assert result.exit_code == 0
         assert (formated_hard_flag_dir / "dataset1-modified").exists()
+
+    def test_sync_hakai_datasets(self, tmp_path):
+        active_datasets_xml = tmp_path / "datasets.xml"
+        local_repo_path = tmp_path / "datasets-repo"
+        result = run_cli(
+            "--datasets-xml",
+            local_repo_path / "**/datasets.d/**/*.xml",
+            "--active-datasets-xml",
+            active_datasets_xml,
+            "sync",
+            "--repo-url",
+            "https://github.com/HakaiInstitute/hakai-datasets",
+            "--branch",
+            "development",
+            "--local-repo-path",
+            local_repo_path,
+        )
+        assert result.exit_code == 0, result.output
+        assert active_datasets_xml.exists()
 
 
 class TestErddapDeploySave:

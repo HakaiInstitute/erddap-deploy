@@ -11,12 +11,27 @@ from loguru import logger
 
 
 class Variable:
+    @logger.catch(reraise=True)
     def __init__(self, variable):
         self.variable = variable
-        self.destination_name = self.variable.find("destinationName").text
-        self.source_name = self.variable.find("sourceName").text
-        self.data_type = self.variable.find("dataType").text
+
+        destination_name = self.variable.find("destinationName")
+        self.destination_name = (
+            destination_name.text.strip() if destination_name is not None else None
+        )
+
+        source_name = self.variable.find("sourceName")
+        self.source_name = source_name.text.strip() if source_name is not None else None
+
+        data_type = self.variable.find("dataType")
+        self.data_type = data_type.text.strip() if data_type is not None else None
+
         self.attrs = self._get_attrs()
+
+    def __repr__(self) -> str:
+        return (
+            f"<sourceName={self.source_name} destinationName={self.destination_name}>"
+        )
 
     def _get_attrs(self):
         return {
@@ -26,6 +41,7 @@ class Variable:
 
 
 class Dataset:
+    @logger.catch(reraise=True)
     def __init__(self, dataset: ET.Element):
         self.dataset = dataset
         self.type = self.dataset.attrib["type"]
@@ -52,14 +68,12 @@ class Dataset:
         }
 
     def _get_variables(self):
-        return {
-            item.find("destinationName").text: Variable(item)
-            for item in self.dataset.findall(".//dataVariable")
-        }
+        return [Variable(item) for item in self.dataset.findall(".//dataVariable")]
 
     def to_xarray(self):
         """Convert a Dataset object to an xarray Dataset"""
-        # TODO generate an empty netcdf sample of the resulting dataset and run compliance checker on it
+        # TODO generate an empty netcdf sample of the resulting dataset and
+        # run compliance checker on it
         vars = {
             var.destination_name: xr.DataArray(data=None, attrs=var.attrs)
             for var in self.variables.values()
@@ -68,6 +82,12 @@ class Dataset:
 
     def to_xml(self, output=None):
         return ET.tostring(self.dataset).decode("UTF-8")
+
+    def get_variables_destination_names(self):
+        return [var.destination_name or var.source_name for var in self.variables]
+
+    def get_variables_source_names(self):
+        return [var.source_name for var in self.variables]
 
 
 class Erddap:
@@ -225,7 +245,6 @@ class Erddap:
 
             Path(output).write_text(self.datasets_xml, encoding=self.encoding)
         elif source == "parsed":
-
             Path(output).write_text(
                 f'<?xml version="1.0" encoding="{encoding}"?>\n'
                 + ET.tostring(self.tree, encoding=encoding).decode(encoding),
@@ -294,6 +313,8 @@ IOOS_CATEGORIES = (
 
 EDD_TYPES = (
     "EDDGridAggregateExistingDimension",
+    "EDDGridFromEtopo",
+    "EDDGridSideBySide",
     "EDDTableFromEML",
     "EDDGridFromAudioFiles",
     "EDDTableFromEMLBatch",
