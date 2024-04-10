@@ -364,7 +364,7 @@ def uptime_kuma_monitor(
             status_page=status_page,
             datasets=datasets,
             dry_run=dry_run,
-            monitor_kwargs=monitor_kwargs
+            monitor_kwargs=monitor_kwargs,
         )
 
         logger.info(f"Found {len(erddap_monitor.monitors)} erddap dataset monitors")
@@ -525,7 +525,7 @@ def monitor(
             sys.exit(1)
     else:
         logger.debug("Using erddap_url={}", erddap_url)
-    
+
     if monitor_kwargs:
         try:
             monitor_kwargs = json.loads(monitor_kwargs)
