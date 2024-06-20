@@ -59,6 +59,10 @@ inputs:
     description: "The ssh port to connecto the erddap server."
     required: false
     default: 22
+  sudo:
+    description: "If true, the action will run the command with sudo."
+    required: false
+    default: false
 runs:
   using: "composite"
   steps:
@@ -70,8 +74,9 @@ runs:
         key: ${{ inputs.ssh_key }}
         port: ${{ inputs.ssh_port }}
         script: |
+          ${{ inputs.sudo && 'sudo ' || '' }}\
           docker exec \
-          $(docker ps --filter name=${{ inputs.container_name }} -q) \
+          $(${{ inputs.sudo && 'sudo ' || '' }}docker ps --filter name=${{ inputs.container_name }} -q) \
           erddap_deploy \
           ${{ inputs.datasets_xml && '--datasets-xml=' || '' }}${{ inputs.datasets_xml }} \
           ${{ inputs.recursive && '--recursive' || '' }} \
