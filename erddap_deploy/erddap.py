@@ -351,4 +351,5 @@ EDD_TYPES = (
     "EDDTableFromDapSequence",
     "EDDTableFromDatabase",
     "EDDTableFromEDDGrid",
+    "EDDTableFromParquetFiles",
 )
